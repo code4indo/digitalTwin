@@ -1,0 +1,2 @@
+project untuk mengakuisisi data dari perangkat IoT dan menyimpannya ke influxDB
+salah satu cara membaca data dari perangkat adalah dengan menggunakan browser misalnya dengan alamat 10.6.0.12, dan browser menampilkan informasi dalam format ini 46#22.20#2D303D, dimana 46 adalah kelembapan, 22.20 adalah suhu dan 2D303D adalah ID device 

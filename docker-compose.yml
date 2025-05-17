@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:latest # Ini akan mengambil image InfluxDB 2.x atau 3.x terbaru
+    container_name: influxdb_service
+    restart: unless-stopped
+    ports:
+      - "8086:8086" # Memetakan port InfluxDB default ke host Anda
+    volumes:
+      # Volume untuk menyimpan data InfluxDB secara persisten
+      # Data akan tetap ada meskipun container dihentikan atau dihapus
+      - influxdb_data_volume:/var/lib/influxdb2
+      # Opsional: Volume untuk menyimpan konfigurasi InfluxDB secara persisten
+      # Berguna jika Anda ingin mengelola file konfigurasi secara manual
+      # - ./my_influxdb_config:/etc/influxdb2
+    environment:
+      # Variabel lingkungan untuk setup awal InfluxDB (hanya berpengaruh pada saat pertama kali dijalankan dengan volume kosong)
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=padi
+      - DOCKER_INFLUXDB_INIT_PASSWORD=padipadi
+      - DOCKER_INFLUXDB_INIT_ORG=iot_project_alpha
+      - DOCKER_INFLUXDB_INIT_BUCKET=sensor_data_primary
+      # Opsional: Anda bisa mengatur token admin. Jika tidak diatur, token acak akan dibuat saat setup awal.
+      # Sangat disarankan untuk mengatur token yang kuat dan diketahui untuk lingkungan produksi.
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v
+
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf_service
+    restart: unless-stopped
+    depends_on:
+      - influxdb # Pastikan InfluxDB dimulai sebelum Telegraf
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro # Mount file konfigurasi Telegraf (read-only)
+      # Opsional: Jika Anda ingin Telegraf memiliki akses ke device_list.csv (misalnya untuk plugin 'file')
+      # - ./device_list.csv:/etc/telegraf/device_list.csv:ro
+    # Jaringan diperlukan agar Telegraf dapat mencapai InfluxDB dengan nama service 'influxdb'
+    # dan juga perangkat di jaringan host jika IP perangkat adalah IP di jaringan lokal Anda.
+    # Jika perangkat berada di jaringan Docker yang sama, 'default' network sudah cukup.
+    # Jika perangkat berada di luar Docker (misalnya, LAN fisik), Anda mungkin memerlukan 'host' network mode
+    # atau konfigurasi jaringan Docker yang lebih canggih.
+    # Untuk kesederhanaan awal, kita asumsikan Telegraf bisa mencapai IP perangkat.
+    # Jika InfluxDB dan Telegraf berada di bridge network yang sama (default oleh Compose),
+    # Telegraf bisa menghubungi InfluxDB via 'http://influxdb:8086'.
+    # Untuk Telegraf menghubungi perangkat di 10.6.0.x, container Telegraf perlu berada di jaringan yang sama
+    # atau memiliki rute ke jaringan tersebut. Jika 10.6.0.x adalah jaringan host Anda,
+    # Anda mungkin perlu menambahkan `network_mode: "host"` pada layanan telegraf,
+    # TAPI INI AKAN MEMBUAT PORT MAPPING INFLUXDB (8086:8086) TIDAK BERLAKU JIKA INFLUXDB JUGA HOST MODE.
+    # Alternatif: buat custom bridge network dan hubungkan kedua container.
+    # Untuk sekarang, kita biarkan default, yang berarti Telegraf dan InfluxDB ada di bridge network yang sama.
+    # Akses ke 10.6.0.x dari dalam container Telegraf akan bergantung pada setup jaringan Docker host Anda.
+    # Jika 10.6.0.x adalah IP di LAN Anda dan Docker host bisa mencapainya,
+    # maka container Telegraf (dengan network default bridge) juga seharusnya bisa.
+
+volumes:
+  influxdb_data_volume: {} # Mendefinisikan named volume untuk data
+  # my_influxdb_config: {} # Jika Anda menggunakan volume konfigurasi, uncomment ini juga
