@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   influxdb:
     image: influxdb:latest # Ini akan mengambil image InfluxDB 2.x atau 3.x terbaru
@@ -15,20 +13,39 @@ services:
       # Berguna jika Anda ingin mengelola file konfigurasi secara manual
       # - ./my_influxdb_config:/etc/influxdb2
     environment:
-      # Variabel lingkungan untuk setup awal InfluxDB (hanya berpengaruh pada saat pertama kali dijalankan dengan volume kosong)
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=padi
-      - DOCKER_INFLUXDB_INIT_PASSWORD=padipadi
+      - DOCKER_INFLUXDB_INIT_MODE=setup # Mode setup untuk inisialisasi
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin_user # Ganti dengan username yang Anda inginkan
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin_password # Ganti dengan password yang kuat
       - DOCKER_INFLUXDB_INIT_ORG=iot_project_alpha
       - DOCKER_INFLUXDB_INIT_BUCKET=sensor_data_primary
-      # Opsional: Anda bisa mengatur token admin. Jika tidak diatur, token acak akan dibuat saat setup awal.
-      # Sangat disarankan untuk mengatur token yang kuat dan diketahui untuk lingkungan produksi.
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v
+    networks:
+      - app_network
+
+  bmkg_collector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bmkg_collector_service
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    environment:
+      # Pastikan variabel lingkungan ini sesuai dengan yang ada di bmkg_data_collector.py
+      # atau lebih baik, baca dari environment variables di dalam skrip Python.
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v
+      - INFLUXDB_ORG=iot_project_alpha
+      - INFLUXDB_BUCKET=sensor_data_primary
+      # Tambahkan variabel lain yang mungkin dibutuhkan oleh skrip Anda
+    networks:
+      - app_network
 
   telegraf:
     image: telegraf:latest
     container_name: telegraf_service
     restart: unless-stopped
+    network_mode: "host"
     depends_on:
       - influxdb # Pastikan InfluxDB dimulai sebelum Telegraf
     volumes:
@@ -52,7 +69,12 @@ services:
     # Akses ke 10.6.0.x dari dalam container Telegraf akan bergantung pada setup jaringan Docker host Anda.
     # Jika 10.6.0.x adalah IP di LAN Anda dan Docker host bisa mencapainya,
     # maka container Telegraf (dengan network default bridge) juga seharusnya bisa.
+    # Karena network_mode: "host" digunakan, blok 'networks' di bawah ini harus dihapus.
+
+networks:
+  app_network:
+    driver: bridge
 
 volumes:
-  influxdb_data_volume: {} # Mendefinisikan named volume untuk data
-  # my_influxdb_config: {} # Jika Anda menggunakan volume konfigurasi, uncomment ini juga
+  influxdb_data_volume:
+    driver: local

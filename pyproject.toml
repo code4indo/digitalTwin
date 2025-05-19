@@ -7,9 +7,18 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 influxdb-client = {extras = ["ciso"], version = "^1.40.0"}
 requests = "^2.25.1"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+pandas = "^2.1.1"
+python-dotenv = "^1.0.0"
+schedule = "^1.2.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+httpx = "^0.28.1"
 
 [build-system]
 requires = ["poetry-core"]
