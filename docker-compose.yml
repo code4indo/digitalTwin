@@ -71,10 +71,25 @@ services:
     # maka container Telegraf (dengan network default bridge) juga seharusnya bisa.
     # Karena network_mode: "host" digunakan, blok 'networks' di bawah ini harus dihapus.
 
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana_service
+    restart: unless-stopped
+    ports:
+      - "3001:3000" # Memetakan port Grafana default ke host Anda
+    volumes:
+      - grafana_data_volume:/var/lib/grafana
+    depends_on:
+      - influxdb
+    networks:
+      - app_network
+
 networks:
   app_network:
     driver: bridge
 
 volumes:
   influxdb_data_volume:
+    driver: local
+  grafana_data_volume: # Volume untuk menyimpan data Grafana
     driver: local
