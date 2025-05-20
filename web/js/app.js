@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // IMPORTANT: Replace 'YOUR_API_KEY_HERE' with your actual valid API key
 const API_KEY = 'c5023020a5203c9eb451e2459df2047b9d261a30af1abcd54bd546f3ddb3248d'; 
+const API_BASE_URL = 'http://127.0.0.1:8002'; // Define base URL for the API
 
 // Update current time
 function initializeCurrentTime() {
@@ -137,7 +138,7 @@ async function fetchAndUpdateSystemHealth() {
     const activeDevicesElement = document.getElementById('active-devices');
 
     try {
-        const response = await axios.get('/system/health/', {
+        const response = await axios.get(`${API_BASE_URL}/system/health/`, { // Use absolute URL
             headers: {
                 'X-API-Key': API_KEY
             }

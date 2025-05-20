@@ -1,5 +1,7 @@
 // Chart configurations and initializations
-document.addEventListener('DOMContentLoaded', function() {
+
+// Make this a global function that app.js can call
+window.initializeCharts = function() {
     // This file contains specific chart configurations
     // Most chart instantiations are already in app.js
     
@@ -22,9 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
     Chart.defaults.plugins.tooltip.boxPadding = 4;
     
     // Create any additional charts not covered in app.js
-    createSensorDataDistributionChart();
-    createSystemHealthChart();
-});
+    // These functions are defined below in this file.
+    // If they are intended to create charts immediately, they can be called here.
+    // For now, let's assume they are called as needed by other parts of the application
+    // or that their primary purpose was to be available, which they now are globally.
+    // createSensorDataDistributionChart(); 
+    // createSystemHealthChart();
+}; // Ensure this is explicitly assigned to window
 
 // Additional chart for sensor data distribution
 function createSensorDataDistributionChart() {

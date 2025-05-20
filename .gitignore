@@ -5,6 +5,8 @@ __pycache__/
 *.pyd
 *~
 *.swp
+.pytest_cache/
+pytest.ini
 
 # Virtual environment
 venv/
@@ -12,6 +14,13 @@ venv/
 env/
 .env/
 ENV/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
 
 # Distribution / packaging
 .Python
@@ -148,3 +157,81 @@ desktop.ini
 *.bak
 *.tmp
 # device_list.csv # Uncomment this line if you want to ignore device_list.csv
+
+# Node.js / React
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
+.pnp/
+.pnp.js
+package-lock.json
+
+# Web build
+web-react/dist/
+web-react/build/
+web-react/.cache/
+web/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+
+# Docker
+docker-compose.override.yml
+.docker/
+docker-data/
+
+# InfluxDB
+influxdb-data/
+
+# Grafana
+grafana-data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+
+# Project specific
+web-backup/
+health_response.json
+*.bak
+*.tmp
+
+# Security / API keys
+*.pem
+*.key
+*.pub
+*.crt
+*.cer
+api_keys.txt
+secrets.json
+
+# Large data files
+*.csv.gz
+*.parquet
+*.h5
+*.hdf5
+*.pkl
+*.joblib
+model_weights/
+sensor_data_archive/
+
+# Generated documentation
+docs/generated/
+api-docs/

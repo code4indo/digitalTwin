@@ -1,0 +1,235 @@
+/* Styles khusus untuk loading screen */
+.loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.loading-container {
+  text-align: center;
+}
+
+.loading-logo {
+  margin-bottom: var(--space-lg);
+}
+
+.loading-logo img {
+  height: 80px;
+  animation: pulse 2s infinite;
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  margin-bottom: var(--space-lg);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error and loading states */
+.loading-indicator {
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.error-message {
+  padding: var(--space-md);
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left: 4px solid var(--danger-color);
+  color: var(--danger-color);
+  margin-bottom: var(--space-md);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Alert styling */
+.alerts-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.alert-item {
+  padding: var(--space-md);
+  border-left: 4px solid var(--secondary-color);
+  margin-bottom: var(--space-md);
+  background-color: rgba(52, 152, 219, 0.05);
+  border-radius: var(--border-radius-sm);
+}
+
+.alert-item.critical {
+  border-left-color: var(--danger-color);
+  background-color: rgba(231, 76, 60, 0.05);
+}
+
+.alert-item.warning {
+  border-left-color: var(--warning-color);
+  background-color: rgba(243, 156, 18, 0.05);
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.alert-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--secondary-color);
+}
+
+.alert-icon.critical {
+  background-color: var(--danger-color);
+}
+
+.alert-icon.warning {
+  background-color: var(--warning-color);
+}
+
+.alert-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.alert-message {
+  margin-bottom: var(--space-sm);
+}
+
+.alert-recommendation {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Status icons */
+.status-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space-md);
+  position: relative;
+}
+
+.status-icon::before {
+  content: '';
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.status-icon.temperature {
+  background-color: rgba(231, 76, 60, 0.2);
+}
+
+.status-icon.temperature::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e74c3c'%3E%3Cpath d='M12 2C11.4477 2 11 2.44772 11 3V16.1707C9.8044 16.5825 9 17.6938 9 19C9 20.6569 10.3431 22 12 22C13.6569 22 15 20.6569 15 19C15 17.6938 14.1956 16.5825 13 16.1707V3C13 2.44772 12.5523 2 12 2Z'/%3E%3C/svg%3E");
+}
+
+.status-icon.humidity {
+  background-color: rgba(52, 152, 219, 0.2);
+}
+
+.status-icon.humidity::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233498db'%3E%3Cpath d='M12 3.1L7.05 8.05C4.05 11.05 4.45 15.8 8.75 17.95C9.7 18.35 10.8 18.55 11.95 18.55C13.1 18.55 14.3 18.3 15.25 17.9C19.55 15.8 19.95 11.05 16.95 8.05L12 3.1Z'/%3E%3C/svg%3E");
+}
+
+.status-icon.external {
+  background-color: rgba(243, 156, 18, 0.2);
+}
+
+.status-icon.external::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f39c12'%3E%3Cpath d='M12 3C7.038 3 3 7.038 3 12C3 16.962 7.038 21 12 21C16.962 21 21 16.962 21 12C21 7.038 16.962 3 12 3ZM12 19C8.14 19 5 15.86 5 12C5 8.14 8.14 5 12 5C15.86 5 19 8.14 19 12C19 15.86 15.86 19 12 19Z'/%3E%3Cpath d='M12 7V12H17'/%3E%3C/svg%3E");
+}
+
+.status-icon.health {
+  background-color: rgba(46, 204, 113, 0.2);
+}
+
+.status-icon.health::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232ecc71'%3E%3Cpath d='M16.5 3C19.538 3 22 5.5 22 9C22 16 14.5 20 12 21.5C9.5 20 2 16 2 9C2 5.5 4.5 3 7.5 3C9.36 3 11 4 12 5C13 4 14.64 3 16.5 3Z'/%3E%3C/svg%3E");
+}
+
+/* Trend Analysis Styles */
+.trend-controls {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.period-selector {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-md);
+  gap: var(--space-md);
+}
+
+.period-btn {
+  background-color: var(--light-color);
+  border: none;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.period-btn:hover {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.period-btn.active {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+/* Prediction Chart Styles */
+.prediction-controls {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.prediction-notes {
+  margin-top: var(--space-md);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.confidence-note {
+  display: flex;
+  align-items: center;
+  margin-top: var(--space-xs);
+}
+
+.confidence-indicator {
+  display: inline-block;
+  width: 16px;
+  height: 8px;
+  background-color: rgba(231, 76, 60, 0.1);
+  margin-right: var(--space-xs);
+  border: 1px dashed rgba(231, 76, 60, 0.5);
+}

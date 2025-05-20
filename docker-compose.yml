@@ -1,4 +1,35 @@
 services:
+  web:
+    image: nginx:alpine
+    container_name: web_service
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./web:/usr/share/nginx/html
+    networks:
+      - app_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api_service
+    restart: unless-stopped
+    ports:
+      - "8002:8002"  # Port untuk FastAPI
+    depends_on:
+      - influxdb
+    environment:
+      - PYTHONUNBUFFERED=1
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v
+      - INFLUXDB_ORG=iot_project_alpha
+      - INFLUXDB_BUCKET=sensor_data_primary
+    command: uvicorn api:app --host 0.0.0.0 --port 8002
+    networks:
+      - app_network
+
   influxdb:
     image: influxdb:latest # Ini akan mengambil image InfluxDB 2.x atau 3.x terbaru
     container_name: influxdb_service
