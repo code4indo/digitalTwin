@@ -33,10 +33,12 @@ services:
     environment:
       # Pastikan variabel lingkungan ini sesuai dengan yang ada di bmkg_data_collector.py
       # atau lebih baik, baca dari environment variables di dalam skrip Python.
+      - PYTHONUNBUFFERED=1 # Mencegah buffering output Python agar log terlihat
       - INFLUXDB_URL=http://influxdb:8086
       - INFLUXDB_TOKEN=th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v
       - INFLUXDB_ORG=iot_project_alpha
       - INFLUXDB_BUCKET=sensor_data_primary
+      - BMKG_KODE_WILAYAH=31.74.04.1003 # Kode wilayah yang diperbarui
       # Tambahkan variabel lain yang mungkin dibutuhkan oleh skrip Anda
     networks:
       - app_network
@@ -45,13 +47,14 @@ services:
     image: telegraf:latest
     container_name: telegraf_service
     restart: unless-stopped
-    network_mode: "host"
     depends_on:
       - influxdb # Pastikan InfluxDB dimulai sebelum Telegraf
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro # Mount file konfigurasi Telegraf (read-only)
       # Opsional: Jika Anda ingin Telegraf memiliki akses ke device_list.csv (misalnya untuk plugin 'file')
       # - ./device_list.csv:/etc/telegraf/device_list.csv:ro
+    networks:
+      - app_network
     # Jaringan diperlukan agar Telegraf dapat mencapai InfluxDB dengan nama service 'influxdb'
     # dan juga perangkat di jaringan host jika IP perangkat adalah IP di jaringan lokal Anda.
     # Jika perangkat berada di jaringan Docker yang sama, 'default' network sudah cukup.

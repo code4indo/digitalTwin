@@ -1,14 +1,18 @@
 # api.py
+import asyncio # Ditambahkan
+import subprocess # Ditambahkan
+import pandas as pd # Ditambahkan
 import os
-import logging # Ditambahkan
+import logging
+from datetime import datetime, timedelta # datetime dari datetime ditambahkan
+
 from typing import List, Optional, Dict, Any
-from fastapi import FastAPI, HTTPException, Query, Depends # Depends ditambahkan
-from fastapi.security import APIKeyHeader # Ditambahkan
+from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi.security import APIKeyHeader
 from influxdb_client import InfluxDBClient
-from influxdb_client.client.exceptions import InfluxDBError
-from datetime import datetime
-import pandas as pd
+from influxdb_client.client.exceptions import InfluxDBError # Pastikan ini diimpor jika endpoint lain membutuhkannya
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 # Muat variabel lingkungan dari file .env
 load_dotenv()
@@ -22,6 +26,19 @@ INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", "th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "iot_project_alpha")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET_PRIMARY", "sensor_data_primary")
+
+# Konstanta untuk health check - tidak lagi digunakan oleh endpoint /system/health/ untuk jumlah perangkat
+# ACTIVE_DEVICE_TIMESPAN_MINUTES = 10 
+# TOTAL_DEVICE_TIMESPAN_DAYS = 90
+
+# Path ke daftar perangkat dan variabel cache
+DEVICE_LIST_PATH = "device_list.csv"
+_device_ips_cache: Optional[List[str]] = None # Cache untuk daftar IP dari CSV
+
+# Variabel global untuk caching hasil ping
+_latest_ping_results: Dict[str, bool] = {}
+_latest_ping_timestamp: Optional[datetime] = None
+PING_RESULT_CACHE_SECONDS = 10 * 60  # 10 menit
 
 # Konfigurasi Autentikasi API Key
 API_KEY_NAME = "X-API-Key"
@@ -44,7 +61,7 @@ async def get_api_key(api_key: str = Depends(api_key_header_auth)):
 app = FastAPI(
     title="Digital Twin Sensor API",
     description="API untuk mengakses data sensor yang dikumpulkan oleh Telegraf dan disimpan di InfluxDB. Memerlukan X-API-Key header untuk autentikasi.",
-    version="1.1.0" # Versi diperbarui
+    version="1.2.0" # Versi diperbarui untuk mencerminkan penambahan endpoint health
 )
 
 influx_client: Optional[InfluxDBClient] = None
@@ -56,12 +73,16 @@ async def startup_event():
     try:
         influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
         query_api = influx_client.query_api()
-        if influx_client.ping():
-            logger.info("Berhasil terhubung ke InfluxDB.")
-        else:
-            logger.error("Gagal terhubung ke InfluxDB (ping tidak berhasil). Harap periksa konfigurasi dan status InfluxDB.")
-            influx_client = None # Set ke None jika ping gagal
-            query_api = None
+        # Pindahkan pengecekan ping ke endpoint health check atau tempat yang lebih sesuai jika diperlukan pengecekan berkala
+        # if influx_client.ping():
+        #     logger.info("Berhasil terhubung ke InfluxDB.")
+        # else:
+        #     logger.error("Gagal terhubung ke InfluxDB (ping tidak berhasil). Harap periksa konfigurasi dan status InfluxDB.")
+        #     influx_client = None # Set ke None jika ping gagal
+        #     query_api = None
+        # Cukup inisialisasi, biarkan endpoint health check yang melakukan ping aktif
+        logger.info("InfluxDB client initialized. Connection status will be checked by health endpoint or on first query.")
+
     except Exception as e:
         logger.error(f"Error saat inisialisasi koneksi InfluxDB: {e}", exc_info=True)
         influx_client = None
@@ -80,6 +101,177 @@ def get_query_api():
     return query_api
 
 ALLOWED_AGGREGATE_FUNCTIONS = {"mean", "median", "sum", "count", "min", "max", "stddev", "first", "last"}
+
+# Pydantic model untuk response status kesehatan sistem
+class SystemHealthStatus(BaseModel):
+    status: str
+    active_devices: int
+    total_devices: int
+    ratio_active_to_total: float
+    influxdb_connection: str
+
+# Fungsi helper baru
+def get_device_ips_from_csv() -> List[str]:
+    global _device_ips_cache
+    # Untuk saat ini, kita akan membaca ulang CSV setiap kali untuk memastikan daftar terbaru.
+    # Jika file besar atau sering diakses, caching _device_ips_cache bisa dipertimbangkan kembali
+    # dengan mekanisme invalidasi yang lebih baik (misalnya, berdasarkan timestamp file).
+    # Namun, untuk daftar perangkat yang tidak sering berubah, pembacaan ulang sederhana sudah cukup.
+    
+    current_ips = []
+    try:
+        if not os.path.exists(DEVICE_LIST_PATH):
+            logger.error(f"File daftar perangkat tidak ditemukan: {DEVICE_LIST_PATH}")
+            return []
+        df = pd.read_csv(DEVICE_LIST_PATH)
+        if "IP ADDRESS" not in df.columns:
+            logger.error(f"Kolom 'IP ADDRESS' tidak ditemukan di {DEVICE_LIST_PATH}")
+            return []
+        # Ambil IP unik dan hilangkan nilai NaN
+        current_ips = df["IP ADDRESS"].dropna().astype(str).unique().tolist()
+        logger.info(f"Berhasil memuat {len(current_ips)} IP perangkat unik dari {DEVICE_LIST_PATH}")
+    except Exception as e:
+        logger.error(f"Gagal membaca daftar perangkat dari {DEVICE_LIST_PATH}: {e}", exc_info=True)
+        return [] # Kembalikan list kosong jika ada error
+
+    # Update cache jika daftar IP berubah
+    # Ini adalah invalidasi cache sederhana jika daftar IP aktual dari CSV berubah.
+    if _device_ips_cache is None or set(_device_ips_cache) != set(current_ips):
+        logger.info("Daftar IP perangkat berubah, cache hasil ping akan di-refresh pada pemeriksaan berikutnya.")
+        global _latest_ping_timestamp # Tandai cache ping sebagai kedaluwarsa
+        _latest_ping_timestamp = None 
+    _device_ips_cache = current_ips
+    return _device_ips_cache
+
+async def ping_device(ip_address: str, timeout_seconds: int = 1) -> bool:
+    try:
+        command = ["ping", "-c", "1", f"-W", str(timeout_seconds), ip_address]
+        
+        process = await asyncio.create_subprocess_exec(
+            *command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
+        
+        if process.returncode == 0:
+            logger.debug(f"Ping ke {ip_address} berhasil.")
+            return True
+        else:
+            # Tidak perlu log sebagai warning jika hanya gagal ping (perangkat offline)
+            logger.debug(f"Ping ke {ip_address} gagal. Kode kembali: {process.returncode}. Stderr: {stderr.decode(errors='ignore').strip()}")
+            return False
+    except FileNotFoundError:
+        logger.error("Perintah 'ping' tidak ditemukan. Pastikan sudah terinstall dan ada di PATH.")
+        return False 
+    except Exception as e:
+        logger.error(f"Error saat melakukan ping ke {ip_address}: {e}", exc_info=True)
+        return False
+
+@app.get("/system/health/", response_model=SystemHealthStatus, summary="Dapatkan status kesehatan sistem secara real-time")
+async def get_system_health_status(api_key: str = Depends(get_api_key)):
+    global _latest_ping_results, _latest_ping_timestamp
+
+    influxdb_ok = False
+    if influx_client:
+        try:
+            influxdb_ok = influx_client.ping()
+            logger.info("InfluxDB ping successful for health check.")
+        except Exception as ping_exc:
+            logger.warning(f"InfluxDB ping failed during health check: {ping_exc}", exc_info=True)
+            influxdb_ok = False
+    influxdb_connection_status = "connected" if influxdb_ok else "disconnected"
+
+    device_ips = get_device_ips_from_csv()
+    total_devices_count = len(device_ips)
+    active_devices_count = 0
+    
+    now = datetime.now()
+    
+    perform_ping_refresh = True
+    if _latest_ping_timestamp and (now - _latest_ping_timestamp).total_seconds() < PING_RESULT_CACHE_SECONDS:
+        # Periksa apakah semua IP saat ini ada di cache dan jumlahnya sama
+        # Ini untuk menangani kasus jika device_list.csv diubah (IP ditambah/dikurangi)
+        cached_ips_set = set(_latest_ping_results.keys())
+        current_ips_set = set(device_ips)
+        if cached_ips_set == current_ips_set:
+             perform_ping_refresh = False
+             logger.info("Menggunakan hasil ping dari cache.")
+             active_devices_count = sum(1 for ip in device_ips if _latest_ping_results.get(ip, False))
+        else:
+            logger.info("Daftar perangkat di CSV berubah sejak cache terakhir, melakukan refresh ping.")
+    elif _latest_ping_timestamp:
+        logger.info("Cache hasil ping kedaluwarsa, melakukan refresh ping.")
+    else: # _latest_ping_timestamp is None
+        logger.info("Tidak ada cache hasil ping, melakukan refresh ping.")
+
+    if perform_ping_refresh:
+        current_ping_statuses_map = {}
+        current_active_count = 0
+        if total_devices_count > 0:
+            ping_timeout_seconds = 1
+            logger.info(f"Melakukan ping ke {total_devices_count} perangkat...")
+            ping_tasks = [ping_device(ip, timeout_seconds=ping_timeout_seconds) for ip in device_ips]
+            results = await asyncio.gather(*ping_tasks, return_exceptions=True)
+            
+            for i, res in enumerate(results):
+                ip = device_ips[i]
+                if isinstance(res, Exception):
+                    logger.error(f"Exception saat ping ke {ip} selama refresh: {res}", exc_info=True)
+                    current_ping_statuses_map[ip] = False
+                elif res is True:
+                    current_active_count += 1
+                    current_ping_statuses_map[ip] = True
+                else: # res is False
+                    current_ping_statuses_map[ip] = False
+            
+            _latest_ping_results = current_ping_statuses_map
+            _latest_ping_timestamp = now
+            active_devices_count = current_active_count
+            logger.info(f"Refresh ping selesai: {active_devices_count}/{total_devices_count} perangkat aktif. Hasil di-cache.")
+        else:
+            _latest_ping_results = {}
+            _latest_ping_timestamp = now
+            active_devices_count = 0
+            logger.info("Tidak ada perangkat untuk di-ping. Cache dikosongkan.")
+    
+    ratio = 0.0
+    system_status = "Critical" 
+
+    if total_devices_count == 0:
+        system_status = "No Devices Configured"
+        active_devices_count = 0 
+        ratio = 0.0
+    else:
+        ratio = active_devices_count / total_devices_count
+        if not influxdb_ok: # Jika InfluxDB mati, sistem tidak bisa Optimal atau Good
+             if ratio > 0.9: system_status = "Warning" # Optimal tapi DB down -> Warning
+             elif ratio >= 0.75: system_status = "Warning" # Good tapi DB down -> Warning
+             elif ratio >= 0.5: system_status = "Warning"
+             else: system_status = "Critical"
+        else: # InfluxDB OK
+            if ratio > 0.9:
+                system_status = "Optimal"
+            elif ratio >= 0.75:
+                system_status = "Good"
+            elif ratio >= 0.5:
+                system_status = "Warning"
+            else: 
+                system_status = "Critical"
+            
+    # Logika tambahan jika InfluxDB mati, status tidak boleh "Optimal" atau "Good"
+    if not influxdb_ok:
+        if system_status == "Optimal" or system_status == "Good":
+            system_status = "Warning" # Turunkan status jika DB bermasalah
+        # Jika sudah Warning atau Critical karena rasio perangkat, biarkan.
+
+    return SystemHealthStatus(
+        status=system_status,
+        active_devices=active_devices_count,
+        total_devices=total_devices_count,
+        ratio_active_to_total=round(ratio, 4),
+        influxdb_connection=influxdb_connection_status
+    )
 
 @app.get("/devices/", summary="Daftar semua perangkat unik", response_model=List[Dict[str, Any]])
 async def list_devices(api_key: str = Depends(get_api_key)): # Ditambahkan api_key dependency
