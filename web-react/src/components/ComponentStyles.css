@@ -1,0 +1,477 @@
+/* Styles for Room Details Section */
+.room-details-section {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.room-selector select {
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--light-color);
+  background-color: white;
+  font-size: 1rem;
+  min-width: 200px;
+}
+
+.placeholder-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.room-data {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--light-color);
+}
+
+.room-meta {
+  display: flex;
+  gap: var(--space-lg);
+  color: var(--text-muted);
+}
+
+.room-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-md);
+}
+
+.stat-card {
+  padding: var(--space-md);
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stat-title {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.stat-value.temperature {
+  color: var(--danger-color);
+}
+
+.stat-value.humidity {
+  color: var(--secondary-color);
+}
+
+.stat-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.stat-meta .optimal {
+  color: var(--accent-color);
+}
+
+.stat-meta .warning {
+  color: var(--warning-color);
+}
+
+.devices-control {
+  margin-top: var(--space-md);
+}
+
+.device-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-md);
+}
+
+.device-item {
+  padding: var(--space-md);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--bg-color);
+  border-left: 4px solid var(--light-color);
+}
+
+.device-item.active {
+  border-left-color: var(--accent-color);
+}
+
+.device-item.inactive {
+  border-left-color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.device-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.device-name {
+  font-weight: 500;
+}
+
+.device-status {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.device-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-sm);
+}
+
+.device-setting {
+  font-size: 0.9rem;
+}
+
+.setting-value {
+  font-weight: 500;
+}
+
+.control-btn {
+  padding: 6px 12px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Styles for Predictive Analysis Section */
+.predictive-section {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.prediction-controls {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.prediction-controls select {
+  padding: 6px 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--light-color);
+  background-color: white;
+}
+
+.prediction-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+@media (max-width: 1200px) {
+  .prediction-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.prediction-card {
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: var(--space-md);
+}
+
+.prediction-card h3 {
+  margin-bottom: var(--space-md);
+  font-size: 1.1rem;
+}
+
+.prediction-chart-container {
+  height: 240px;
+  position: relative;
+}
+
+/* Recommendation styles */
+.prediction-recommendations {
+  grid-column: span 1;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.recommendation-item {
+  display: flex;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--light-color);
+}
+
+.recommendation-time {
+  width: 100px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding-right: var(--space-sm);
+}
+
+.recommendation-content {
+  flex: 1;
+}
+
+.recommendation-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.recommendation-description {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.recommendation-actions {
+  margin-top: var(--space-sm);
+  text-align: right;
+}
+
+.action-btn {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  background-color: transparent;
+  border: 1px solid var(--secondary-color);
+  color: var(--secondary-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+/* Automation Controls Section */
+.automation-section {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.automation-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+}
+
+.status-indicator.active {
+  background-color: var(--accent-color);
+}
+
+.toggle-btn {
+  margin-left: var(--space-md);
+  padding: 6px 12px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.automation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+@media (max-width: 1000px) {
+  .automation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.automation-card {
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-md);
+}
+
+.automation-card h3 {
+  margin-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--light-color);
+  padding-bottom: var(--space-sm);
+}
+
+.parameter-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.parameter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.parameter-name {
+  font-weight: 500;
+}
+
+.parameter-value {
+  width: 50%;
+}
+
+.range-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.range-min, .range-max {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  width: 40px;
+}
+
+.range-slider input[type="range"] {
+  flex: 1;
+}
+
+.parameter-actions {
+  margin-top: var(--space-lg);
+  text-align: right;
+}
+
+.primary-btn {
+  padding: 8px 16px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.primary-btn.success {
+  background-color: var(--accent-color);
+  position: relative;
+}
+
+.primary-btn.success:after {
+  content: '✓';
+  margin-left: 5px;
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+.device-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.device-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-sm) 0;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+}
+
+.status-dot.active {
+  background-color: var(--accent-color);
+}
+
+.status-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.mode-selector {
+  display: flex;
+  gap: 4px;
+}
+
+.mode-btn {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  background-color: transparent;
+  border: 1px solid var(--light-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  background-color: var(--secondary-color);
+  color: white;
+  border-color: var(--secondary-color);
+}
+
+.power-btn {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.device-error {
+  color: var(--danger-color);
+  font-size: 0.85rem;
+}
+
+.device-item.error {
+  border-left-color: var(--danger-color);
+  opacity: 0.7;
+}

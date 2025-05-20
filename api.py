@@ -8,6 +8,7 @@ from datetime import datetime, timedelta # datetime dari datetime ditambahkan
 
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi.middleware.cors import CORSMiddleware  # Tambahkan import CORS middleware
 from fastapi.security import APIKeyHeader
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.exceptions import InfluxDBError # Pastikan ini diimpor jika endpoint lain membutuhkannya
@@ -62,6 +63,18 @@ app = FastAPI(
     title="Digital Twin Sensor API",
     description="API untuk mengakses data sensor yang dikumpulkan oleh Telegraf dan disimpan di InfluxDB. Memerlukan X-API-Key header untuk autentikasi.",
     version="1.2.0" # Versi diperbarui untuk mencerminkan penambahan endpoint health
+)
+
+# Konfigurasi CORS
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3003") # Mendukung aplikasi React di port 3003
+origins_list = origins.split(",") if origins != "*" else ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 influx_client: Optional[InfluxDBClient] = None

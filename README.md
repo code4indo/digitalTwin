@@ -189,6 +189,66 @@ web-react/
 └── package.json           # Dependensi dan script
 ```
 
+## Aplikasi Web React
+
+### Menjalankan Aplikasi Web React
+
+Aplikasi web berbasis React dapat dijalankan dengan dua mode:
+
+#### Mode 1: Menggunakan Docker Container
+
+```bash
+# Menjalankan aplikasi React dalam container Docker
+./start-react-app.sh
+
+# Dengan API key kustom
+./start-react-app.sh --api-key your_api_key_here
+```
+
+#### Mode 2: Development Mode
+
+```bash
+# Menjalankan API dan database di container, tapi React dalam mode development lokal
+./start-react-app.sh --dev
+```
+
+### Memeriksa Status Sistem
+
+Gunakan script pemeriksaan status sistem untuk memastikan semua komponen berjalan dengan baik:
+
+```bash
+./check-system-status.sh
+```
+
+### Mengakses Aplikasi
+
+- Aplikasi Web React: [http://localhost:3003](http://localhost:3003)
+- API FastAPI: [http://localhost:8002/docs](http://localhost:8002/docs)
+- InfluxDB: [http://localhost:8086](http://localhost:8086)
+- Grafana Dashboard: [http://localhost:3001](http://localhost:3001)
+
+### Fitur Aplikasi Web
+
+1. **Dashboard Interaktif**
+   - Visualisasi kondisi real-time dari seluruh gedung
+   - Pemantauan suhu dan kelembapan per ruangan
+   - Indikator status dan peringatan
+
+2. **Representasi Digital Twin**
+   - Model 3D gedung dengan overlay data sensor
+   - Navigasi interaktif antar ruangan
+   - Visualisasi distribusi suhu dan kelembapan
+
+3. **Analisis Prediktif**
+   - Prakiraan kondisi iklim mikro ke depan
+   - Identifikasi potensi kondisi berbahaya
+   - Rekomendasi untuk optimasi
+
+4. **Kontrol & Otomatisasi**
+   - Antarmuka pengaturan parameter lingkungan
+   - Penjadwalan otomatis untuk sistem HVAC
+   - Riwayat perubahan dan efek
+
 ## Pengembangan Selanjutnya
 
 - Integrasi dengan sistem otomasi gedung (BMS)

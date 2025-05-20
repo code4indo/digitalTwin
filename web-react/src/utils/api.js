@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 // Konstanta untuk API
-// IMPORTANT: Ganti dengan kunci API yang valid atau implementasi autentikasi yang lebih aman
-const API_KEY = 'c5023020a5203c9eb451e2459df2047b9d261a30af1abcd54bd546f3ddb3248d';
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api'  // Jika di production gunakan proxy yang diatur di webpack
-  : 'http://127.0.0.1:8002'; // URL API di development
+// Ambil API key dari environment variable atau gunakan fallback untuk development
+const API_KEY = process.env.REACT_APP_API_KEY || localStorage.getItem('api_key') || 'development_key';
+  
+// Ambil base URL dari environment variable atau gunakan fallback berdasarkan environment
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+                   (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8002');
 
 // Buat instance axios dengan konfigurasi default
 const api = axios.create({
@@ -93,6 +94,61 @@ export const fetchPredictions = async (params = {}) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching predictions:', error);
+    throw error;
+  }
+};
+
+// Function untuk mengambil detail ruangan berdasarkan ID
+export const fetchRoomDetails = async (roomId) => {
+  try {
+    const response = await api.get(`/rooms/${roomId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching room details for ${roomId}:`, error);
+    throw error;
+  }
+};
+
+// Function untuk mengambil data analisis prediktif
+export const fetchPredictiveAnalysis = async (params = {}) => {
+  try {
+    const response = await api.get('/analysis/predictive', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching predictive analysis:', error);
+    throw error;
+  }
+};
+
+// Function untuk mengambil rekomendasi proaktif
+export const fetchRecommendations = async () => {
+  try {
+    const response = await api.get('/recommendations/proactive');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    throw error;
+  }
+};
+
+// Function untuk mengambil pengaturan otomasi
+export const fetchAutomationSettings = async () => {
+  try {
+    const response = await api.get('/automation/settings');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching automation settings:', error);
+    throw error;
+  }
+};
+
+// Function untuk memperbarui pengaturan otomasi
+export const updateAutomationSettings = async (settings) => {
+  try {
+    const response = await api.put('/automation/settings', settings);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating automation settings:', error);
     throw error;
   }
 };

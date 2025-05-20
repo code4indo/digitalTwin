@@ -15,8 +15,11 @@ RUN pip install --upgrade pip \
     && poetry config virtualenvs.create false \
     && poetry install --without dev --no-interaction --no-ansi
 
-# Menyalin skrip kolektor data BMKG ke direktori kerja
-COPY bmkg_data_collector.py /app/
+# Menyalin semua file Python yang dibutuhkan ke direktori kerja
+COPY . /app/
 
-# Perintah untuk menjalankan aplikasi ketika kontainer dimulai
+# Create an empty __init__.py file to make the directory a Python package
+RUN touch /app/__init__.py
+
+# Default command bisa diberikan di docker-compose
 CMD ["python", "bmkg_data_collector.py"]

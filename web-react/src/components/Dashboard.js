@@ -2,18 +2,31 @@ import React from 'react';
 import BuildingModel from './BuildingModel';
 import EnvironmentalStatus from './EnvironmentalStatus';
 import AlertsPanel from './AlertsPanel';
-import PredictionsChart from './PredictionsChart';
 import TrendAnalysis from './TrendAnalysis';
+import RoomDetails from './RoomDetails';
+import PredictiveAnalysis from './PredictiveAnalysis';
+import AutomationControls from './AutomationControls';
 
 const Dashboard = () => {
   return (
-    <section className="dashboard-grid">
-      <BuildingModel />
-      <EnvironmentalStatus />
-      <AlertsPanel />
-      <PredictionsChart />
-      <TrendAnalysis />
-    </section>
+    <>
+      {/* Dashboard Overview Grid */}
+      <section className="dashboard-grid">
+        <BuildingModel />
+        <EnvironmentalStatus />
+        <AlertsPanel />
+        <TrendAnalysis />
+      </section>
+      
+      {/* Room Details Section */}
+      <RoomDetails />
+      
+      {/* Predictive Analysis Section */}
+      <PredictiveAnalysis />
+      
+      {/* Automation Controls Section */}
+      <AutomationControls />
+    </>
   );
 };
 

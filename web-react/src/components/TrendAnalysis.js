@@ -49,7 +49,7 @@ const TrendAnalysis = () => {
     
     switch (period) {
       case 'day':
-        labels = Array.from({ length: 24 }, (_, i) => \`\${i}:00\`);
+        labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
         count = 24;
         break;
       case 'week':
@@ -57,11 +57,11 @@ const TrendAnalysis = () => {
         count = 7;
         break;
       case 'month':
-        labels = Array.from({ length: 30 }, (_, i) => \`\${i + 1} Mei\`);
+        labels = Array.from({ length: 30 }, (_, i) => `${i + 1} Mei`);
         count = 30;
         break;
       default:
-        labels = Array.from({ length: 24 }, (_, i) => \`\${i}:00\`);
+        labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
         count = 24;
     }
     
