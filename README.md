@@ -82,7 +82,74 @@ Untuk menjalankan seluruh sistem (database, API, web server, data collector) dal
 docker-compose up -d
 ```
 
-3. Buka browser dan akses `http://localhost:8000`
+Setelah semua container berjalan:
+1. Akses web interface di `http://localhost:80`
+2. Akses API di `http://localhost:8002`
+3. Akses Grafana dashboard di `http://localhost:3001` (login dengan admin_user/admin_password)
+4. Akses InfluxDB di `http://localhost:8086`
+
+### Panduan Lengkap Instalasi dan Konfigurasi
+
+#### Prasyarat
+- [Python 3.10+](https://www.python.org/downloads/)
+- [Node.js 16+](https://nodejs.org/)
+- [Docker](https://www.docker.com/get-started) dan [Docker Compose](https://docs.docker.com/compose/install/)
+- [Git](https://git-scm.com/downloads)
+
+#### Instalasi Manual
+
+1. **Clone repositori**
+   ```bash
+   git clone https://github.com/your-username/digitalTwin.git
+   cd digitalTwin
+   ```
+
+2. **Setup lingkungan Python**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Untuk Linux/macOS
+   # atau
+   venv\Scripts\activate     # Untuk Windows
+   pip install -r requirements.txt
+   ```
+   
+   Alternatif jika menggunakan Poetry:
+   ```bash
+   poetry install
+   poetry shell
+   ```
+
+3. **Setup frontend React**
+   ```bash
+   cd web-react
+   npm install
+   ```
+
+4. **Konfigurasi environment**
+   - Salin `.env.example` ke `.env` dan sesuaikan nilai-nilainya
+   ```bash
+   cp .env.example .env
+   ```
+
+#### Menjalankan Aplikasi Secara Terpisah
+
+1. **Jalankan backend API**
+   ```bash
+   python api.py
+   # atau
+   uvicorn api:app --reload --port 8002
+   ```
+
+2. **Jalankan frontend React (mode development)**
+   ```bash
+   cd web-react
+   npm start
+   ```
+
+3. **Jalankan collector data BMKG**
+   ```bash
+   python bmkg_data_collector.py
+   ```
 
 ## Integrasi Data dengan Telegraf
 
@@ -125,10 +192,70 @@ web-react/
 ## Pengembangan Selanjutnya
 
 - Integrasi dengan sistem otomasi gedung (BMS)
-- Pengembangan model ML yang lebih akurat
-- Ekspansi visualisasi digital twin
+- Pengembangan model ML yang lebih akurat untuk prediksi kondisi lingkungan
+- Ekspansi visualisasi digital twin dengan detail ruangan yang lebih kompleks
 - Implementasi feedback loop untuk pembelajaran berkelanjutan
-- Implementasi autentikasi dan pengelolaan pengguna
-- Dashboard admin untuk konfigurasi sistem
-- Integrasi dengan sistem kontrol otomatis (HVAC)
-- Pengembangan model machine learning yang lebih akurat
+- Implementasi autentikasi dan pengelolaan pengguna dengan berbagai tingkat akses
+- Dashboard admin untuk konfigurasi sistem dan manajemen perangkat
+- Integrasi dengan sistem kontrol otomatis HVAC untuk regulasi lingkungan otomatis
+- Penambahan fitur notifikasi (email, SMS, mobile push) untuk kondisi kritis
+
+## Kontribusi
+
+Kontribusi selalu diterima! Untuk berkontribusi pada proyek ini:
+
+1. Fork repositori
+2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
+3. Commit perubahan Anda (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buka Pull Request
+
+## Lisensi
+
+Proyek ini dilisensikan di bawah lisensi MIT - lihat file [LICENSE](LICENSE) untuk detail.
+
+## Kontak
+
+Nama Tim Proyek - [@twitter_handle](https://twitter.com/twitter_handle) - email@example.com
+
+Link Proyek: [https://github.com/yourusername/digitalTwin](https://github.com/yourusername/digitalTwin)
+
+## Pemecahan Masalah (Troubleshooting)
+
+### Masalah Koneksi dengan API
+
+Jika frontend tidak dapat menghubungi API:
+1. Pastikan API server berjalan di port 8002
+2. Periksa CORS settings di `api.py`
+3. Periksa konfigurasi proxy di `webpack.config.js`
+
+### Masalah dengan Docker
+
+Jika container Docker tidak berjalan dengan benar:
+1. Periksa logs dengan `docker-compose logs -f [service_name]`
+2. Pastikan semua port yang diperlukan tidak digunakan oleh aplikasi lain
+3. Restart services dengan `docker-compose restart [service_name]`
+
+### Masalah dengan Data Sensor
+
+Jika data sensor tidak muncul:
+1. Periksa koneksi ke InfluxDB dengan `python verify_influxdb_data.py`
+2. Pastikan Telegraf berjalan dengan benar
+3. Periksa `device_list.csv` untuk memastikan semua perangkat terdaftar
+
+## FAQ
+
+**Q: Bagaimana cara menambahkan sensor baru?**  
+A: Tambahkan entri baru di file `device_list.csv` dengan format: `id_device,nama_ruangan,lantai,posisi_x,posisi_y`
+
+**Q: Bagaimana cara mengubah interval pengambilan data BMKG?**  
+A: Edit parameter `INTERVAL_MINUTES` di file `bmkg_data_collector.py`
+
+**Q: Bagaimana cara mengakses API documentation?**  
+A: Buka `http://localhost:8002/docs` setelah menjalankan API server
+
+**Q: Bagaimana cara mengubah model 3D gedung?**  
+A: Edit file `web-react/src/components/BuildingModel.js` untuk menyesuaikan model Three.js
+
+**Q: Bagaimana cara mengubah kredensial default?**  
+A: Edit file `.env` atau variabel environment di `docker-compose.yml`

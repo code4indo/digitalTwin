@@ -44,13 +44,17 @@ module.exports = {
     static: {
       directory: path.join(__dirname, 'public'),
     },
-    port: 3000,
-    proxy: {
-      '/api': {
+    port: 3003,
+    open: true,
+    hot: true,
+    allowedHosts: 'all',
+    proxy: [
+      {
+        context: ['/api'],
         target: 'http://127.0.0.1:8002',
         pathRewrite: {'^/api' : ''},
         changeOrigin: true
       }
-    }
+    ]
   }
 };
