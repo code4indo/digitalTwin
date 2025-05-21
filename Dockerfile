@@ -1,6 +1,9 @@
 # Menggunakan image Python resmi sebagai basis
 FROM python:3.10-slim
 
+# Menginstal paket sistem yang diperlukan, termasuk iputils-ping untuk perintah ping
+RUN apt-get update && apt-get install -y iputils-ping && rm -rf /var/lib/apt/lists/*
+
 # Menetapkan direktori kerja di dalam kontainer
 WORKDIR /app
 

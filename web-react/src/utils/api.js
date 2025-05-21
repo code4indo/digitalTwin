@@ -2,11 +2,13 @@ import axios from 'axios';
 
 // Konstanta untuk API
 // Ambil API key dari environment variable atau gunakan fallback untuk development
-const API_KEY = process.env.REACT_APP_API_KEY || localStorage.getItem('api_key') || 'development_key';
+const API_KEY = process.env.REACT_APP_API_KEY || localStorage.getItem('api_key') || 'development_key_for_testing';
+console.log('Using API Key:', API_KEY);
   
 // Ambil base URL dari environment variable atau gunakan fallback berdasarkan environment
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
                    (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8002');
+console.log('Using API Base URL:', API_BASE_URL);
 
 // Buat instance axios dengan konfigurasi default
 const api = axios.create({
@@ -50,10 +52,19 @@ export const fetchExternalWeatherData = async () => {
 
 export const fetchSystemHealth = async () => {
   try {
-    const response = await api.get('/system/health');
+    console.log('Requesting system health data...');
+    console.log('URL:', `${API_BASE_URL}/system/health/`);
+    console.log('Headers:', { 'X-API-Key': API_KEY });
+    
+    const response = await api.get('/system/health/');
+    console.log('System health API response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching system health:', error);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', error.response.data);
+    }
     throw error;
   }
 };

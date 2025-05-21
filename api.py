@@ -123,6 +123,17 @@ class SystemHealthStatus(BaseModel):
     ratio_active_to_total: float
     influxdb_connection: str
 
+# Pydantic model untuk informasi status perangkat
+class DeviceStatus(BaseModel):
+    ip_address: str
+    is_active: bool
+    last_checked: datetime
+
+# Pydantic model untuk response daftar status perangkat
+class DeviceStatusResponse(BaseModel):
+    devices: List[DeviceStatus]
+    last_refresh_time: datetime
+
 # Fungsi helper baru
 def get_device_ips_from_csv() -> List[str]:
     global _device_ips_cache
@@ -157,6 +168,7 @@ def get_device_ips_from_csv() -> List[str]:
     return _device_ips_cache
 
 async def ping_device(ip_address: str, timeout_seconds: int = 1) -> bool:
+    # Pertama coba menggunakan ping
     try:
         command = ["ping", "-c", "1", f"-W", str(timeout_seconds), ip_address]
         
@@ -175,8 +187,32 @@ async def ping_device(ip_address: str, timeout_seconds: int = 1) -> bool:
             logger.debug(f"Ping ke {ip_address} gagal. Kode kembali: {process.returncode}. Stderr: {stderr.decode(errors='ignore').strip()}")
             return False
     except FileNotFoundError:
-        logger.error("Perintah 'ping' tidak ditemukan. Pastikan sudah terinstall dan ada di PATH.")
-        return False 
+        logger.warning("Perintah 'ping' tidak ditemukan. Mencoba alternatif dengan socket...")
+        # Metode alternatif menggunakan socket TCP
+        import socket
+        
+        # Port yang umum tersedia untuk dicek (port 7 adalah echo port)
+        # Dalam kasus nyata, sesuaikan dengan port layanan yang diketahui berjalan di perangkat
+        port_to_check = 7
+        
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout_seconds)
+        
+        try:
+            # Coba membuat koneksi TCP
+            result = sock.connect_ex((ip_address, port_to_check))
+            sock.close()
+            
+            # Kode 0 berarti berhasil terhubung
+            if result == 0:
+                logger.debug(f"Koneksi socket ke {ip_address}:{port_to_check} berhasil.")
+                return True
+            else:
+                logger.debug(f"Koneksi socket ke {ip_address}:{port_to_check} gagal.")
+                return False
+        except socket.error as e:
+            logger.debug(f"Error socket saat mencoba terhubung ke {ip_address}:{port_to_check}: {e}")
+            return False
     except Exception as e:
         logger.error(f"Error saat melakukan ping ke {ip_address}: {e}", exc_info=True)
         return False
@@ -429,6 +465,116 @@ async def get_sensor_data(
         if isinstance(e, ValueError) or isinstance(e, TypeError): # Contoh error yang mungkin aman untuk ditampilkan pesannya
              detail_msg = f"Gagal query data dari InfluxDB: {str(e)}"
         raise HTTPException(status_code=500, detail=detail_msg)
+
+@app.get("/devices/status/", response_model=DeviceStatusResponse, summary="Dapatkan status aktif perangkat")
+async def get_devices_status(api_key: str = Depends(get_api_key)):
+    """
+    Mengambil status aktif/tidak aktif dari perangkat yang terdaftar.
+    Status ditentukan berdasarkan hasil ping terakhir.
+    Memerlukan autentikasi API Key.
+    """
+    global _latest_ping_results, _latest_ping_timestamp
+
+    device_ips = get_device_ips_from_csv()
+    total_devices_count = len(device_ips)
+    active_devices_count = 0
+    
+    now = datetime.now()
+
+    # Jika tidak ada perangkat, langsung kembalikan response dengan daftar kosong
+    if total_devices_count == 0:
+        return DeviceStatusResponse(devices=[], last_refresh_time=now)
+
+    # Periksa apakah hasil ping perlu di-refresh
+    perform_ping_refresh = True
+    if _latest_ping_timestamp and (now - _latest_ping_timestamp).total_seconds() < PING_RESULT_CACHE_SECONDS:
+        # Gunakan hasil ping dari cache
+        perform_ping_refresh = False
+        logger.info("Menggunakan hasil ping dari cache.")
+    elif _latest_ping_timestamp:
+        logger.info("Cache hasil ping kedaluwarsa, melakukan refresh ping.")
+    else: # _latest_ping_timestamp is None
+        logger.info("Tidak ada cache hasil ping, melakukan refresh ping.")
+
+    if perform_ping_refresh:
+        current_ping_statuses_map = {}
+        current_active_count = 0
+        if total_devices_count > 0:
+            ping_timeout_seconds = 1
+            logger.info(f"Melakukan ping ke {total_devices_count} perangkat untuk status...")
+            ping_tasks = [ping_device(ip, timeout_seconds=ping_timeout_seconds) for ip in device_ips]
+            results = await asyncio.gather(*ping_tasks, return_exceptions=True)
+            
+            for i, res in enumerate(results):
+                ip = device_ips[i]
+                if isinstance(res, Exception):
+                    logger.error(f"Exception saat ping ke {ip} selama refresh status: {res}", exc_info=True)
+                    current_ping_statuses_map[ip] = False
+                elif res is True:
+                    current_active_count += 1
+                    current_ping_statuses_map[ip] = True
+                else: # res is False
+                    current_ping_statuses_map[ip] = False
+            
+            _latest_ping_results = current_ping_statuses_map
+            _latest_ping_timestamp = now
+            active_devices_count = current_active_count
+            logger.info(f"Refresh ping selesai untuk status: {active_devices_count}/{total_devices_count} perangkat aktif. Hasil di-cache.")
+        else:
+            _latest_ping_results = {}
+            _latest_ping_timestamp = now
+            active_devices_count = 0
+            logger.info("Tidak ada perangkat untuk di-ping. Cache dikosongkan.")
+    
+    # Buat daftar status perangkat untuk response
+    devices_status_list = []
+    for ip in device_ips:
+        devices_status_list.append({
+            "ip_address": ip,
+            "is_active": _latest_ping_results.get(ip, False),
+            "last_checked": _latest_ping_timestamp if _latest_ping_results.get(ip, False) else None
+        })
+    
+    return DeviceStatusResponse(
+        devices=devices_status_list,
+        last_refresh_time=now
+    )
+
+@app.get("/system/device_status/", response_model=DeviceStatusResponse, summary="Daftar status perangkat (aktif/tidak aktif)")
+async def get_device_status(api_key: str = Depends(get_api_key)):
+    """
+    Menampilkan daftar semua perangkat dengan status aktif atau tidak aktif berdasarkan pemeriksaan ping terakhir.
+    Memerlukan autentikasi API Key.
+    
+    - Status aktif (true) jika perangkat merespons ping
+    - Status tidak aktif (false) jika perangkat tidak merespons ping
+    - Waktu terakhir diperiksa menunjukkan kapan ping terakhir dilakukan
+    """
+    global _latest_ping_results, _latest_ping_timestamp
+    
+    # Jika tidak ada hasil ping sebelumnya, atau cache sudah kedaluwarsa, lakukan ping refresh
+    now = datetime.now()
+    if _latest_ping_timestamp is None or (now - _latest_ping_timestamp).total_seconds() >= PING_RESULT_CACHE_SECONDS:
+        # Dapatkan status kesehatan untuk memperbarui _latest_ping_results
+        await get_system_health_status(api_key)
+    
+    # Dapatkan daftar perangkat dari CSV
+    device_ips = get_device_ips_from_csv()
+    
+    # Buat daftar status perangkat
+    device_statuses = []
+    for ip in device_ips:
+        is_active = _latest_ping_results.get(ip, False)
+        device_statuses.append(DeviceStatus(
+            ip_address=ip,
+            is_active=is_active,
+            last_checked=_latest_ping_timestamp or now
+        ))
+    
+    return DeviceStatusResponse(
+        devices=device_statuses,
+        last_refresh_time=_latest_ping_timestamp or now
+    )
 
 # Untuk menjalankan aplikasi ini (misalnya dengan uvicorn):
 # uvicorn api:app --reload

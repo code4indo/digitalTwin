@@ -319,3 +319,157 @@ A: Edit file `web-react/src/components/BuildingModel.js` untuk menyesuaikan mode
 
 **Q: Bagaimana cara mengubah kredensial default?**  
 A: Edit file `.env` atau variabel environment di `docker-compose.yml`
+
+## Endpoint API untuk Pemeriksaan Kesehatan Sistem
+
+API menyediakan beberapa endpoint untuk memantau kesehatan sistem, berikut adalah endpoint utama yang tersedia:
+
+### 1. Endpoint Kesehatan Sistem
+
+- **URL**: `/system/health/`
+- **Method**: GET
+- **Deskripsi**: Menampilkan status kesehatan keseluruhan sistem, termasuk koneksi ke InfluxDB dan status perangkat
+- **Memerlukan Autentikasi**: Ya (X-API-Key)
+- **Response**: 
+  ```json
+  {
+    "status": "Optimal|Good|Warning|Critical|No Devices Configured",
+    "active_devices": 10,
+    "total_devices": 12,
+    "ratio_active_to_total": 0.8333,
+    "influxdb_connection": "connected|disconnected"
+  }
+  ```
+- **Catatan Status**:
+  - **Optimal**: >90% perangkat aktif dan InfluxDB terhubung
+  - **Good**: ≥75% perangkat aktif dan InfluxDB terhubung
+  - **Warning**: ≥50% perangkat aktif atau InfluxDB tidak terhubung
+  - **Critical**: <50% perangkat aktif
+  - **No Devices Configured**: Tidak ada perangkat yang dikonfigurasi
+
+### 2. Endpoint Daftar Perangkat
+
+- **URL**: `/devices/`
+- **Method**: GET
+- **Deskripsi**: Menampilkan daftar semua perangkat yang terdaftar di sistem dengan lokasi terakhirnya
+- **Memerlukan Autentikasi**: Ya (X-API-Key)
+- **Response**: Array dari objek perangkat
+
+### 3. Endpoint Data Sensor
+
+- **URL**: `/data/`
+- **Method**: GET
+- **Deskripsi**: Mengambil data sensor dengan berbagai opsi filter dan agregasi
+- **Parameter Query**: 
+  - `start_time`: Waktu mulai (ISO format)
+  - `end_time`: Waktu selesai (ISO format)
+  - `device_ids`: Daftar ID perangkat
+  - `locations`: Daftar lokasi
+  - `fields`: Kolom data spesifik (suhu, kelembapan, dll)
+  - `limit`: Jumlah maksimal data (default: 100)
+  - `aggregate_window`: Jendela waktu agregasi (mis. "1h", "30m")
+  - `aggregate_function`: Fungsi agregasi (mean, median, min, max, dll)
+- **Memerlukan Autentikasi**: Ya (X-API-Key)
+- **Response**: Array dari pengukuran sensor
+
+### 4. Endpoint Status Perangkat
+
+- **URL**: `/system/device_status/`
+- **Method**: GET
+- **Deskripsi**: Menampilkan daftar semua perangkat dengan status aktif atau tidak aktif berdasarkan pemeriksaan ping terakhir
+- **Memerlukan Autentikasi**: Ya (X-API-Key)
+- **Response**: 
+  ```json
+  {
+    "devices": [
+      {
+        "ip_address": "10.6.0.13",
+        "is_active": true,
+        "last_checked": "2025-05-21T10:15:30.123456"
+      },
+      {
+        "ip_address": "10.6.0.14",
+        "is_active": false,
+        "last_checked": "2025-05-21T10:15:30.123456"
+      },
+      ...
+    ],
+    "last_refresh_time": "2025-05-21T10:15:30.123456"
+  }
+  ```
+- **Catatan**: Endpoint ini berguna untuk melihat status perangkat individual, yang tidak tersedia di endpoint `/system/health/`
+
+## Menguji API dengan Postman
+
+Untuk menguji API menggunakan Postman, ikuti langkah-langkah berikut:
+
+### Persiapan
+
+1. **Download dan Install Postman**:
+   - Unduh Postman dari [postman.com](https://www.postman.com/downloads/)
+   - Install dan buka aplikasinya
+
+2. **Siapkan API Key**:
+   - Dapatkan API Key yang valid dari file `.env` atau administrator sistem
+
+### Menguji Endpoint Kesehatan Sistem
+
+1. **Buat Request Baru**:
+   - Klik tombol "New" dan pilih "HTTP Request"
+   - Masukkan URL: `http://localhost:8002/system/health/`
+   - Pilih metode: GET
+
+2. **Tambahkan Header Autentikasi**:
+   - Pilih tab "Headers"
+   - Tambahkan key: `X-API-Key`
+   - Tambahkan value: `[API_KEY_ANDA]` (ganti dengan API key yang valid)
+
+3. **Kirim Request**:
+   - Klik tombol "Send" dan lihat respons
+
+### Menguji Endpoint Data Sensor
+
+1. **Buat Request Baru**:
+   - Masukkan URL: `http://localhost:8002/data/`
+   - Pilih metode: GET
+
+2. **Tambahkan Parameter Query**:
+   - Pilih tab "Params"
+   - Tambahkan parameter (key-value):
+     - `start_time`: `2023-01-01T00:00:00Z` (sesuaikan tanggalnya)
+     - `limit`: `10`
+     - `aggregate_window`: `30m` (opsional)
+     - `aggregate_function`: `mean` (opsional)
+
+3. **Tambahkan Header Autentikasi**:
+   - Seperti pada contoh sebelumnya
+
+4. **Kirim Request**:
+   - Klik tombol "Send" dan lihat respons
+
+### Menggunakan Collection dan Environment
+
+Untuk mempermudah pengujian rutin:
+
+1. **Buat Environment**:
+   - Klik "Environments" dan "New"
+   - Tambahkan variabel:
+     - `base_url`: `http://localhost:8002`
+     - `api_key`: `[API_KEY_ANDA]`
+
+2. **Buat Collection**:
+   - Klik "Collections" dan "New Collection"
+   - Beri nama "Digital Twin API"
+   - Tambahkan request untuk setiap endpoint
+
+3. **Gunakan Variabel Environment**:
+   - Dalam request, gunakan `{{base_url}}/system/health/`
+   - Dalam header, gunakan `{{api_key}}`
+
+Dengan collection dan environment, Anda dapat dengan mudah menguji API di berbagai lingkungan (development, staging, production) cukup dengan mengganti nilai variabel environment.
+
+
+perintah update container
+
+sudo docker-compose up -d --build api
+
