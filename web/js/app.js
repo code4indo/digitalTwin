@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // IMPORTANT: Replace 'YOUR_API_KEY_HERE' with your actual valid API key
-const API_KEY = 'c5023020a5203c9eb451e2459df2047b9d261a30af1abcd54bd546f3ddb3248d'; 
+const API_KEY = 'development_key_for_testing'; 
 const API_BASE_URL = 'http://127.0.0.1:8002'; // Define base URL for the API
 
 // Update current time
@@ -107,30 +107,11 @@ function fetchInitialData() {
     // Set an interval to update health status periodically (e.g., every 30 seconds)
     setInterval(fetchAndUpdateSystemHealth, 30000);
 
-    // Simulate fetching other environmental data (temperature, humidity, external weather)
-    // This part can be replaced with actual API calls for those metrics if available
-    setTimeout(() => {
-        updateEnvironmentalStatus({ 
-            temperature: {
-                avg: 22.5,
-                min: 19.2,
-                max: 24.8
-            },
-            humidity: {
-                avg: 48,
-                min: 42,
-                max: 53
-            },
-            external: {
-                weather: "Cerah Berawan",
-                temperature: 29.8
-            }
-            // System health data is now fetched separately
-        });
-        
-        // showNotification('Sistem Digital Twin siap digunakan (data awal dimuat)', 'normal');
-        // Consider moving this notification to after the first successful health check or other critical data load
-    }, 1000);
+    // Fetch environmental data using API
+    fetchAndUpdateEnvironmentalStatus();
+    
+    // Set interval to update environmental data periodically (every 5 minutes)
+    setInterval(fetchAndUpdateEnvironmentalStatus, 5 * 60 * 1000);
 }
 
 async function fetchAndUpdateSystemHealth() {
@@ -175,6 +156,98 @@ async function fetchAndUpdateSystemHealth() {
         } else {
             console.warn('showNotification function not found. Cannot display error notification.');
         }
+    }
+}
+
+// Fetch environmental data from API and update the UI
+async function fetchAndUpdateEnvironmentalStatus() {
+    try {
+        console.log(`Fetching environmental data using API key: ${API_KEY.slice(0, 5)}...`);
+        
+        // Fetch temperature stats data from API
+        console.log('Fetching temperature stats data...');
+        const tempResponse = await axios.get(`${API_BASE_URL}/stats/temperature/last-hour/stats/`, {
+            headers: {
+                'X-API-Key': API_KEY
+            }
+        });
+        
+        console.log('Temperature response:', tempResponse.data);
+        
+        // Fetch humidity stats data from API
+        console.log('Fetching humidity data...');
+        const humidityResponse = await axios.get(`${API_BASE_URL}/stats/humidity/last-hour/stats/`, {
+            headers: {
+                'X-API-Key': API_KEY
+            }
+        });
+        
+        console.log('Humidity response:', humidityResponse.data);
+
+        // Extract data from responses and handle null/undefined values
+        const tempData = tempResponse.data;
+        const humidityData = humidityResponse.data;
+
+        // Validate temperature data
+        const tempAvg = tempData && typeof tempData.avg_temperature === 'number' ? tempData.avg_temperature : 22.5;
+        const tempMin = tempData && typeof tempData.min_temperature === 'number' ? tempData.min_temperature : 19.2;
+        const tempMax = tempData && typeof tempData.max_temperature === 'number' ? tempData.max_temperature : 24.8;
+        
+        // Validate humidity data
+        const humAvg = humidityData && typeof humidityData.avg_humidity === 'number' ? humidityData.avg_humidity : 48;
+        const humMin = humidityData && typeof humidityData.min_humidity === 'number' ? humidityData.min_humidity : 42;
+        const humMax = humidityData && typeof humidityData.max_humidity === 'number' ? humidityData.max_humidity : 53;
+
+        // Prepare environmental data object
+        const environmentalData = {
+            temperature: {
+                avg: tempAvg,
+                min: tempMin,
+                max: tempMax
+            },
+            humidity: {
+                avg: humAvg,
+                min: humMin,
+                max: humMax
+            },
+            external: {
+                weather: "Cerah Berawan", // Masih dummy data, perlu API endpoint khusus
+                temperature: 29.8 // Masih dummy data, perlu API endpoint khusus
+            }
+        };
+
+        // Log the final data that will be used to update UI
+        console.log('Environmental data to update UI:', environmentalData);
+        
+        // Update UI with fetched data
+        updateEnvironmentalStatus(environmentalData);
+        console.log('Environmental data updated successfully');
+
+    } catch (error) {
+        console.error('Error fetching environmental data:', error);
+        
+        if (error.response) {
+            console.error('Error response:', error.response.data);
+            console.error('Error status:', error.response.status);
+        }
+        
+        // Fallback to dummy data if API calls fail
+        updateEnvironmentalStatus({ 
+            temperature: {
+                avg: 22.5,
+                min: 19.2,
+                max: 24.8
+            },
+            humidity: {
+                avg: 48,
+                min: 42,
+                max: 53
+            },
+            external: {
+                weather: "Cerah Berawan",
+                temperature: 29.8
+            }
+        });
     }
 }
 

@@ -18,7 +18,7 @@ services:
       start_period: 40s
     environment:
       - NODE_ENV=production
-      - REACT_APP_API_URL=http://localhost:8002  # URL API untuk client-side
+      - REACT_APP_API_URL=/api  # URL API untuk client-side dalam production akan di-proxy oleh nginx
       - REACT_APP_API_KEY=${API_KEY:-development_key_for_testing}
     depends_on:
       - api
@@ -41,7 +41,7 @@ services:
       - INFLUXDB_TOKEN=th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v
       - INFLUXDB_ORG=iot_project_alpha
       - INFLUXDB_BUCKET=sensor_data_primary
-      - CORS_ORIGINS=http://localhost:3003,http://web-react:80
+      - CORS_ORIGINS=http://localhost:3003,http://web-react:80,http://10.13.0.4:3003,*
       - VALID_API_KEYS=${API_KEY:-development_key_for_testing}
     command: python -m uvicorn api:app --host 0.0.0.0 --port 8002 --reload
     networks:

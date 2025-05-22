@@ -55,6 +55,7 @@ def start_bmkg_collector():
 
 def start_api_server():
     """Memulai API server"""
+    # Menggunakan python3 api.py yang sekarang dikonfigurasi untuk mendengarkan di 0.0.0.0:8002
     command = "python3 api.py"
     threading.Thread(target=run_command, args=(command, "API Server"), daemon=True).start()
 
