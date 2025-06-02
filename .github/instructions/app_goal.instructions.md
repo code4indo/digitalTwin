@@ -36,4 +36,11 @@ Prinsip dan Standar Pengembangan Perangkat Lunak:
 
 
 keterangan:
-sistem pada umumnya di design berjalan menggunakan container 
+semua service berjalan diatas container, jadi untuk pengujian lakukan semua berbasis container 
+
+keterangan port yang digunakan pada container:
+
+grafana = 3001
+influxDB = 8086
+web-react = 3003
+API Server =  8002

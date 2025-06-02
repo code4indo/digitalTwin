@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchRoomDetails } from '../utils/api';
+import RoomEnvironmentalChart from './RoomEnvironmentalChart';
 
 const RoomDetails = () => {
   const [selectedRoom, setSelectedRoom] = useState('');
@@ -15,11 +16,15 @@ const RoomDetails = () => {
       try {
         setLoading(true);
         const data = await fetchRoomDetails(selectedRoom);
+        console.log('Room data from API:', data);
         setRoomData(data);
         setError(null);
       } catch (err) {
         console.error('Error fetching room details:', err);
         setError('Gagal memuat data ruangan. Silakan coba lagi.');
+        
+        // Fallback ke data dummy jika API gagal
+        console.warn('Menggunakan data dummy sebagai fallback');
         setRoomData(getDummyRoomData(selectedRoom));
       } finally {
         setLoading(false);
@@ -190,6 +195,16 @@ const RoomDetails = () => {
                   </div>
                 ))}
               </div>
+            </div>
+            
+            {/* Grafana Dashboard Integration */}
+            <div className="room-environmental-trends">
+              <h4>Tren Data Lingkungan</h4>
+              <RoomEnvironmentalChart 
+                roomId={selectedRoom} 
+                height={350}
+                theme="light"
+              />
             </div>
           </div>
         )}

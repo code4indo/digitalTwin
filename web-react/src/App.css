@@ -209,7 +209,10 @@ footer {
 /* Model Viewer */
 .model-container {
     position: relative;
-    height: 400px;
+    width: 100%;
+    aspect-ratio: 16 / 10; /* 1.6:1 ratio for better proportions */
+    min-height: 350px;
+    max-height: 500px;
     border-radius: var(--border-radius-sm);
     overflow: hidden;
     background-color: var(--bg-color);
@@ -254,18 +257,121 @@ footer {
     top: var(--space-md);
     left: var(--space-md);
     display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    background-color: rgba(255,255,255,0.95);
+    padding: var(--space-md);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-md);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.floor-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.floor-group label {
+    font-weight: 600;
+    color: var(--heading-color);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-xs);
+}
+
+.room-buttons {
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-xs);
 }
 
-.floor-btn {
-    background-color: rgba(255,255,255,0.8);
-    border: none;
-    padding: var(--space-xs) var(--space-md);
+.room-btn {
+    background-color: rgba(52, 152, 219, 0.1);
+    border: 1px solid var(--secondary-color);
+    padding: var(--space-xs) var(--space-sm);
     border-radius: var(--border-radius-sm);
     transition: all 0.2s;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+    cursor: pointer;
+    min-width: 40px;
+    text-align: center;
 }
 
-.floor-btn:hover, .floor-btn.active {
+.room-btn:hover {
+    background-color: rgba(52, 152, 219, 0.2);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.room-btn.active {
     background-color: var(--secondary-color);
     color: white;
+    box-shadow: var(--shadow-md);
+}
+
+/* Responsive Design for 3D Model */
+@media (max-width: 768px) {
+    .model-container {
+        aspect-ratio: 4 / 3; /* More square ratio for mobile */
+        min-height: 280px;
+        max-height: 350px;
+    }
+    
+    .building-view {
+        grid-column: span 12; /* Full width on mobile */
+    }
+    
+    .floor-selector {
+        position: static;
+        margin-top: var(--space-md);
+        background-color: rgba(255,255,255,0.98);
+        border-radius: var(--border-radius-md);
+        padding: var(--space-md);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .model-controls {
+        bottom: var(--space-sm);
+        right: var(--space-sm);
+        gap: var(--space-xs);
+    }
+    
+    .model-controls button {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .model-controls img {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .model-container {
+        aspect-ratio: 1; /* Square ratio for very small screens */
+        min-height: 250px;
+        max-height: 300px;
+    }
+    
+    .room-btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        min-width: 32px;
+    }
+    
+    .floor-group label {
+        font-size: 0.8rem;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .model-container {
+        /* Ensure crisp rendering on high DPI displays */
+        image-rendering: crisp-edges;
+    }
 }

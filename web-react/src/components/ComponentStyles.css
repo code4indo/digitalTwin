@@ -475,3 +475,82 @@
   border-left-color: var(--danger-color);
   opacity: 0.7;
 }
+
+/* Styles for Grafana Chart Component */
+.room-chart-container {
+  margin: var(--space-md) 0;
+  padding: var(--space-md);
+  background-color: white;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.room-chart-title {
+  margin-bottom: var(--space-md);
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.chart-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  color: var(--color-text-secondary);
+}
+
+.chart-error {
+  padding: var(--space-md);
+  background-color: var(--color-error-bg, #fff8f8);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-error, #d32f2f);
+  margin: var(--space-md) 0;
+}
+
+.chart-iframe-wrapper {
+  position: relative;
+  overflow: hidden;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+}
+
+.chart-iframe-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Room environmental trends section styling */
+.room-environmental-trends {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background-color: var(--color-background-secondary, #f8f9fa);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.room-environmental-trends h4 {
+  margin-bottom: var(--space-md);
+  color: var(--color-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Loading and error states */
+.chart-loading,
+.chart-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  text-align: center;
+}
+
+.chart-error {
+  color: var(--color-error, #d32f2f);
+}

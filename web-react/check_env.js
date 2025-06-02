@@ -10,7 +10,13 @@ const path = require('path');
 console.log('=== Digital Twin Environment Check ===');
 
 // Check for required environment variables
-const requiredEnvVars = ['REACT_APP_API_URL', 'REACT_APP_API_KEY'];
+const requiredEnvVars = [
+  'REACT_APP_API_URL', 
+  'REACT_APP_API_KEY',
+  'REACT_APP_GRAFANA_URL',
+  'REACT_APP_GRAFANA_DASHBOARD_ID',
+  'REACT_APP_GRAFANA_PANEL_ID'
+];
 const missingVars = [];
 
 requiredEnvVars.forEach(varName => {
@@ -26,8 +32,22 @@ if (missingVars.length > 0) {
   // Create default .env.local file
   const defaultEnv = [
     'REACT_APP_API_URL=http://localhost:8002',
-    'REACT_APP_API_KEY=development_key_for_testing'
+    'REACT_APP_API_KEY=development_key_for_testing',
+    'REACT_APP_GRAFANA_URL=http://localhost:3000',
+    'REACT_APP_GRAFANA_DASHBOARD_ID=YOUR_DASHBOARD_ID',
+    'REACT_APP_GRAFANA_PANEL_ID=YOUR_PANEL_ID'
   ].join('\n');
+  
+  // Check if there are Grafana-specific missing variables
+  const grafanaMissingVars = missingVars.filter(v => v.includes('GRAFANA'));
+  if (grafanaMissingVars.length > 0) {
+    console.log('\n📊 Grafana Integration Setup Instructions:');
+    console.log('   1. Make sure Grafana is running (default: http://localhost:3000)');
+    console.log('   2. Get Dashboard ID from your Grafana URL: http://localhost:3000/d/{DASHBOARD_ID}/dashboard-name');
+    console.log('   3. Get Panel ID by clicking a panel title and looking for "editPanel={PANEL_ID}" in URL');
+    console.log('   4. Update these values in the .env.local file');
+    console.log('   For more details, see docs/grafana-integration.md');
+  }
   
   fs.writeFileSync(path.join(__dirname, '.env.local'), defaultEnv);
   console.log('✅ Created .env.local with default values');

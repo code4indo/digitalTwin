@@ -18,17 +18,24 @@ Proyek ini bertujuan untuk mengembangkan sistem cerdas yang mengelola iklim mikr
    - `bmkg_data_collector.py` - Pengumpul data cuaca dari API BMKG
 
 2. **Penyimpanan Data**
-   - InfluxDB sebagai time-series database
+   - Database InfluxDB untuk time series data
+   - Kueri Flux untuk analisis data lingkungan
 
-3. **API dan Backend**
-   - `api.py` - REST API untuk mengakses data sensor
+3. **Backend API**
+   - API untuk akses data dan integrasi dengan frontend
+   - Endpoints untuk data sensor, statistik, dan kontrol perangkat
+   - Endpoints untuk data detail ruangan (`/rooms/`) yang menyediakan informasi kondisi lingkungan real-time
 
-4. **Web Interface Digital Twin**
-   - Visualisasi 3D bangunan menggunakan Three.js
-   - Dashboard monitoring kondisi real-time
-   - Sistem rekomendasi dan otomasi
-   - Analisis prediktif menggunakan machine learning
-   - Frontend berbasis React
+4. **Frontend (Web-React)**
+   - Dashboard interaktif untuk monitoring kondisi ruangan
+   - Digital Twin visualisasi untuk gedung
+   - Integrasi dengan dashboard Grafana untuk visualisasi data detail
+   - Sistem rekomendasi untuk pengaturan optimal
+
+5. **Visualisasi dan Analisis**
+   - Integrasi dengan Grafana untuk visualisasi time series data
+   - Komponen `RoomEnvironmentalChart` yang menampilkan data lingkungan per ruangan
+   - Grafik tren dan analisis komparatif
 
 ## Cara Menggunakan
 
@@ -472,4 +479,78 @@ Dengan collection dan environment, Anda dapat dengan mudah menguji API di berbag
 perintah update container
 
 sudo docker-compose up -d --build api
+
+
+## Integrasi Grafana
+
+Sistem ini terintegrasi dengan Grafana untuk visualisasi data deret waktu yang lebih kaya. Terintegrasi dengan mudah:
+
+### Fitur:
+- Visualisasi data sensor suhu dan kelembaban untuk setiap ruangan
+- Filter data berdasarkan ruangan yang dipilih di UI
+- Embedding panel Grafana langsung ke dalam aplikasi React
+
+### Setup Integrasi:
+1. Konfigurasikan variabel `location` di dashboard Grafana
+2. Set environment variable di `.env.local`:
+   ```
+   REACT_APP_GRAFANA_URL=http://localhost:3000
+   REACT_APP_GRAFANA_DASHBOARD_ID=your-dashboard-id
+   REACT_APP_GRAFANA_PANEL_ID=your-panel-id
+   ```
+3. Komponen `RoomEnvironmentalChart` akan otomatis menampilkan chart sesuai ruangan yang dipilih
+
+Untuk dokumentasi detail tentang integrasi Grafana, lihat [docs/grafana-integration.md](docs/grafana-integration.md).
+
+### Validasi Koneksi:
+Gunakan script `check-grafana-integration.sh` untuk memvalidasi koneksi dengan server Grafana:
+
+```bash
+./check-grafana-integration.sh
+```
+
+## Integrasi Grafana dalam Container
+
+Sistem ini terintegrasi dengan Grafana dalam lingkungan container Docker untuk visualisasi data deret waktu yang lebih kaya. Berikut cara mengintegrasikannya:
+
+### Container Setup:
+
+1. **Konfigurasi Environment Variables**
+   - `.env.local.template` berisi template untuk konfigurasi Grafana
+   - Penting mengatur nilai Dashboard ID dan Panel ID yang benar
+
+2. **Menggunakan Grafana dalam Container**
+   - Grafana berjalan pada port 3001 (`http://localhost:3001`)
+   - Komunikasi antar-container menggunakan nama layanan Docker (`grafana:3000`)
+   - React app mengakses Grafana melalui proxy Nginx pada rute `/grafana`
+
+### Deployment Container:
+
+```bash
+# Membangun dan menjalankan container dengan integrasi Grafana
+./deploy-react-container.sh --rebuild
+```
+
+Skrip ini akan:
+- Memeriksa konfigurasi Grafana
+- Membangun ulang container React jika diperlukan
+- Menjalankan container dengan konfigurasi yang tepat
+
+### Arsitektur Container:
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Web React  │     │     API     │     │  InfluxDB   │
+│  (Port 3003)│────>│  (Port 8002)│────>│  (Port 8086)│
+└──────┬──────┘     └─────────────┘     └─────────────┘
+       │                                       ▲
+       │                                       │
+       ▼                                       │
+┌─────────────┐                        ┌──────────────┐
+│   Grafana   │                        │   Telegraf   │
+│  (Port 3001)│<───────────────────────┤              │
+└─────────────┘                        └──────────────┘
+```
+
+Untuk detail lebih lanjut tentang integrasi Grafana dalam container, lihat [docs/grafana-integration.md](docs/grafana-integration.md).
 

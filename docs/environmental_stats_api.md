@@ -81,6 +81,87 @@ Endpoint ini mengembalikan statistik suhu dan kelembapan (rata-rata, minimum, ma
 }
 ```
 
+## Endpoint Data Ruangan
+
+### Daftar Ruangan
+
+```
+GET /rooms/
+```
+
+Endpoint ini mengembalikan daftar semua ruangan yang tersedia dengan metadata dasar.
+
+### Respon
+
+```json
+[
+  {
+    "id": "F2",
+    "name": "Ruang F2",
+    "floor": "F",
+    "area": 25
+  },
+  {
+    "id": "G3",
+    "name": "Ruang G3",
+    "floor": "G",
+    "area": 30
+  }
+]
+```
+
+### Detail Ruangan
+
+```
+GET /rooms/{room_id}
+```
+
+Endpoint ini mengembalikan data detail ruangan tertentu, termasuk kondisi lingkungan terkini dan informasi perangkat.
+
+### Parameter Path
+- `room_id`: ID ruangan (contoh: F2, G3, dsb)
+
+### Respon
+
+```json
+{
+  "id": "F2",
+  "name": "Ruang F2",
+  "floor": "F",
+  "area": 25,
+  "currentConditions": {
+    "temperature": 22.5,
+    "humidity": 50.0,
+    "co2": 450,
+    "light": 400
+  },
+  "statistics": {
+    "dailyAvg": {
+      "temperature": 22.0,
+      "humidity": 48.0
+    },
+    "timeInOptimalRange": {
+      "temperature": 85,
+      "humidity": 70
+    }
+  },
+  "devices": [
+    {
+      "id": "ac-f2",
+      "name": "AC",
+      "status": "active",
+      "setPoint": 21
+    },
+    {
+      "id": "dh-f2",
+      "name": "Dehumidifier",
+      "status": "active",
+      "setPoint": 50
+    }
+  ]
+}
+```
+
 ## Catatan Penggunaan
 
 1. Semua endpoint memerlukan autentikasi API Key melalui header `X-API-Key`.

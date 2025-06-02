@@ -158,8 +158,17 @@ const TrendAnalysis = () => {
         <div className="trend-controls">
           <select id="trend-location" value={selectedLocation} onChange={handleLocationChange}>
             <option value="all">Semua Ruangan</option>
+            <option value="F2">Ruang F2</option>
             <option value="F3">Ruang F3</option>
+            <option value="F4">Ruang F4</option>
+            <option value="F5">Ruang F5</option>
+            <option value="F6">Ruang F6</option>
+            <option value="G2">Ruang G2</option>
+            <option value="G3">Ruang G3</option>
+            <option value="G4">Ruang G4</option>
             <option value="G5">Ruang G5</option>
+            <option value="G6">Ruang G6</option>
+            <option value="G7">Ruang G7</option>
             <option value="G8">Ruang G8</option>
           </select>
           

@@ -70,6 +70,10 @@ app = FastAPI(
 from routes.stats_routes import router as stats_router
 app.include_router(stats_router)
 
+# Tambahkan router untuk endpoint rooms
+from routes.room_routes import router as room_router
+app.include_router(room_router)
+
 # Konfigurasi CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3003,http://10.13.0.4:3003") # Mendukung aplikasi React di localhost dan IP server
 origins_list = origins.split(",") if origins != "*" else ["*"]

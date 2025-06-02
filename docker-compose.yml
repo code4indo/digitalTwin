@@ -4,8 +4,11 @@ services:
       context: ./web-react
       dockerfile: Dockerfile.react
       args:
-        - REACT_APP_API_URL=http://localhost:8002
+        - REACT_APP_API_URL=/api
         - REACT_APP_API_KEY=${API_KEY:-development_key_for_testing}
+        - REACT_APP_GRAFANA_URL=/grafana
+        - REACT_APP_GRAFANA_DASHBOARD_ID=7d1a6a29-626f-4f4d-a997-e7d0a7c3f872
+        - REACT_APP_GRAFANA_PANEL_ID=2
     container_name: web_react_service
     restart: unless-stopped
     ports:
@@ -20,6 +23,9 @@ services:
       - NODE_ENV=production
       - REACT_APP_API_URL=/api  # URL API untuk client-side dalam production akan di-proxy oleh nginx
       - REACT_APP_API_KEY=${API_KEY:-development_key_for_testing}
+      - REACT_APP_GRAFANA_URL=/grafana  # URL untuk akses dari browser client, di-proxy oleh nginx
+      - REACT_APP_GRAFANA_DASHBOARD_ID=7d1a6a29-626f-4f4d-a997-e7d0a7c3f872
+      - REACT_APP_GRAFANA_PANEL_ID=2
     depends_on:
       - api
     networks:
@@ -130,6 +136,33 @@ services:
       - "3001:3000" # Memetakan port Grafana default ke host Anda
     volumes:
       - grafana_data_volume:/var/lib/grafana
+    environment:
+      # Konfigurasi dasar Grafana
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=padipadi
+      
+      # Konfigurasi untuk iframe embedding
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SECURITY_COOKIE_SAMESITE=disabled
+      - GF_SECURITY_COOKIE_SECURE=false
+      
+      # Konfigurasi untuk mendukung kedua metode akses (langsung dan proxy)
+      # Menggunakan root URL default Grafana tanpa redirect paksa
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+      
+      # Disable redirect enforcement untuk multi-access support
+      - GF_SERVER_ENFORCE_DOMAIN=false
+      
+      # Disable user signup
+      - GF_USERS_ALLOW_SIGN_UP=false
+      
+      # Anonymous access untuk development
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      
+      # Enable CORS untuk iframe
+      - GF_SECURITY_CONTENT_TYPE_PROTECTION=false
     depends_on:
       - influxdb
     networks:

@@ -101,7 +101,7 @@ def test_environmental_stats():
     start_time = (datetime.now() - timedelta(days=3)).isoformat()
     params = {
         "start_time": start_time,
-        "locations": ["Lantai 1", "Lantai 2"]
+        "locations": ["F2", "F3", "G2", "G3"]
     }
     
     print(f"\nTesting GET {url} with start_time and locations filter")

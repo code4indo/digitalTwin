@@ -3,7 +3,7 @@ import * as THREE from 'three';
 
 const BuildingModel = () => {
   const containerRef = useRef(null);
-  const [activeFloor, setActiveFloor] = useState('G');
+  const [activeRoom, setActiveRoom] = useState('F2'); // Changed from activeFloor to activeRoom
   
   // References to Three.js objects
   const sceneRef = useRef(null);
@@ -20,20 +20,27 @@ const BuildingModel = () => {
     scene.background = new THREE.Color(0xf0f0f0);
     sceneRef.current = scene;
     
-    // Create camera
+    // Create camera with optimal settings for building visualization
     const camera = new THREE.PerspectiveCamera(
-      75, // Field of view
+      60, // Reduced field of view for better proportions
       containerRef.current.clientWidth / containerRef.current.clientHeight, // Aspect ratio
       0.1, // Near clipping plane
       1000 // Far clipping plane
     );
-    camera.position.z = 5;
-    camera.position.y = 2;
+    camera.position.set(6, 4, 6); // Better initial position for building view
+    camera.lookAt(0, 0, 0); // Point camera at center of building
     cameraRef.current = camera;
     
-    // Create renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Create renderer with enhanced settings
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance"
+    });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Support high DPI displays
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
     
@@ -154,22 +161,41 @@ const BuildingModel = () => {
     
     buildingModel.add(fWalls);
     
-    // Set initial floor visibility based on active floor
-    updateFloorVisibility(activeFloor);
+    // Set initial room visibility based on active room
+    updateFloorVisibility(activeRoom);
   };
   
-  // Update floor visibility when active floor changes
+  // Update floor visibility when active room changes
   useEffect(() => {
-    updateFloorVisibility(activeFloor);
-  }, [activeFloor]);
+    updateFloorVisibility(activeRoom);
+  }, [activeRoom]);
   
   // Function to update which floor is visible
-  const updateFloorVisibility = (floor) => {
+  const updateFloorVisibility = (selectedRoom) => {
     if (!buildingModelRef.current) return;
+    
+    // Show all floors when no specific room is selected
+    if (!selectedRoom) {
+      buildingModelRef.current.traverse(child => {
+        if (child.userData && child.userData.floor) {
+          child.visible = true;
+        }
+      });
+      return;
+    }
+    
+    // Get floor from room (F2 -> F, G3 -> G)
+    const floor = selectedRoom.charAt(0);
     
     buildingModelRef.current.traverse(child => {
       if (child.userData && child.userData.floor) {
+        // Show only the floor that contains the selected room
         child.visible = child.userData.floor === floor;
+      }
+      
+      // Highlight specific room if room models exist
+      if (child.userData && child.userData.room) {
+        child.visible = child.userData.room === selectedRoom;
       }
     });
   };
@@ -185,16 +211,21 @@ const BuildingModel = () => {
   const zoomModel = (direction) => {
     if (!cameraRef.current) return;
     
-    const zoomAmount = direction === 'in' ? -0.5 : 0.5;
-    cameraRef.current.position.z += zoomAmount;
-    cameraRef.current.updateProjectionMatrix();
+    const zoomFactor = direction === 'in' ? 0.9 : 1.1;
+    const currentDistance = cameraRef.current.position.length();
+    
+    // Limit zoom range for better usability
+    if ((direction === 'in' && currentDistance > 3) || (direction === 'out' && currentDistance < 15)) {
+      cameraRef.current.position.multiplyScalar(zoomFactor);
+      cameraRef.current.updateProjectionMatrix();
+    }
   };
   
   const resetModelView = () => {
     if (!cameraRef.current || !buildingModelRef.current) return;
     
-    cameraRef.current.position.z = 5;
-    cameraRef.current.position.y = 2;
+    cameraRef.current.position.set(6, 4, 6);
+    cameraRef.current.lookAt(0, 0, 0);
     cameraRef.current.updateProjectionMatrix();
     
     buildingModelRef.current.rotation.x = 0;
@@ -202,8 +233,8 @@ const BuildingModel = () => {
     buildingModelRef.current.rotation.z = 0;
   };
   
-  const switchFloor = (floor) => {
-    setActiveFloor(floor);
+  const switchFloor = (room) => {
+    setActiveRoom(room);
   };
   
   return (
@@ -229,18 +260,88 @@ const BuildingModel = () => {
           </button>
         </div>
         <div className="floor-selector">
-          <button 
-            className={`floor-btn ${activeFloor === 'G' ? 'active' : ''}`} 
-            onClick={() => switchFloor('G')}
-          >
-            Lantai G
-          </button>
-          <button 
-            className={`floor-btn ${activeFloor === 'F' ? 'active' : ''}`} 
-            onClick={() => switchFloor('F')}
-          >
-            Lantai F
-          </button>
+          <div className="floor-group">
+            <label>Lantai F</label>
+            <div className="room-buttons">
+              <button 
+                className={`room-btn ${activeRoom === 'F2' ? 'active' : ''}`} 
+                onClick={() => switchFloor('F2')}
+              >
+                F2
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'F3' ? 'active' : ''}`} 
+                onClick={() => switchFloor('F3')}
+              >
+                F3
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'F4' ? 'active' : ''}`} 
+                onClick={() => switchFloor('F4')}
+              >
+                F4
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'F5' ? 'active' : ''}`} 
+                onClick={() => switchFloor('F5')}
+              >
+                F5
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'F6' ? 'active' : ''}`} 
+                onClick={() => switchFloor('F6')}
+              >
+                F6
+              </button>
+            </div>
+          </div>
+          <div className="floor-group">
+            <label>Lantai G</label>
+            <div className="room-buttons">
+              <button 
+                className={`room-btn ${activeRoom === 'G2' ? 'active' : ''}`} 
+                onClick={() => switchFloor('G2')}
+              >
+                G2
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'G3' ? 'active' : ''}`} 
+                onClick={() => switchFloor('G3')}
+              >
+                G3
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'G4' ? 'active' : ''}`} 
+                onClick={() => switchFloor('G4')}
+              >
+                G4
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'G5' ? 'active' : ''}`} 
+                onClick={() => switchFloor('G5')}
+              >
+                G5
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'G6' ? 'active' : ''}`} 
+                onClick={() => switchFloor('G6')}
+              >
+                G6
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'G7' ? 'active' : ''}`} 
+                onClick={() => switchFloor('G7')}
+              >
+                G7
+              </button>
+              <button 
+                className={`room-btn ${activeRoom === 'G8' ? 'active' : ''}`} 
+                onClick={() => switchFloor('G8')}
+              >
+                G8
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
