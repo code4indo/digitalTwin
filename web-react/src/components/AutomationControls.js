@@ -26,9 +26,13 @@ const AutomationControls = () => {
         setLoading(true);
         const data = await fetchAutomationSettings();
         
-        setSettings(data.settings);
-        setDevices(data.devices);
-        setAutomationEnabled(data.enabled);
+        if (data && typeof data === 'object') {
+          setSettings(data.settings || settings);
+          setDevices(Array.isArray(data.devices) ? data.devices : getDummyDevices());
+          setAutomationEnabled(data.enabled !== undefined ? data.enabled : true);
+        } else {
+          setDevices(getDummyDevices());
+        }
         setError(null);
       } catch (err) {
         console.error('Error fetching automation settings:', err);
@@ -273,7 +277,7 @@ const AutomationControls = () => {
           <div className="automation-card device-control">
             <h3>Kontrol Perangkat</h3>
             <div className="device-grid">
-              {devices.map(device => (
+              {Array.isArray(devices) && devices.map(device => (
                 <div key={device.id} className={`device-item ${device.status} ${device.error ? 'error' : ''}`}>
                   <div className="device-header">
                     <span className="device-name">{device.name}</span>

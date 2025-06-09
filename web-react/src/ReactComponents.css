@@ -233,3 +233,53 @@
   margin-right: var(--space-xs);
   border: 1px dashed rgba(231, 76, 60, 0.5);
 }
+
+/* Weather details styling */
+.weather-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.weather-details > div {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.weather-details #external-temperature {
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+.weather-details #external-humidity {
+  color: #3498db;
+  font-weight: 500;
+}
+
+.weather-details #external-wind {
+  color: #95a5a6;
+  font-weight: 500;
+}
+
+.weather-details .data-source {
+  font-size: 0.8em !important;
+  color: #666 !important;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+}
+
+.weather-details .data-source:has-text("Real-time") {
+  border-left-color: #27ae60;
+  background-color: rgba(39, 174, 96, 0.1);
+}
+
+.weather-details .data-source:has-text("Fallback") {
+  border-left-color: #f39c12;
+  background-color: rgba(243, 156, 18, 0.1);
+}

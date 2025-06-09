@@ -11,7 +11,14 @@ const ProactiveRecommendations = () => {
       try {
         setLoading(true);
         const data = await fetchRecommendations();
-        setRecommendations(data);
+        // Ensure data is always an array
+        if (Array.isArray(data)) {
+          setRecommendations(data);
+        } else if (data && Array.isArray(data.recommendations)) {
+          setRecommendations(data.recommendations);
+        } else {
+          setRecommendations(getDummyRecommendations());
+        }
         setError(null);
       } catch (err) {
         console.error('Error fetching recommendations:', err);
@@ -75,7 +82,7 @@ const ProactiveRecommendations = () => {
         <div className="error-message">{error}</div>
       ) : (
         <div className="recommendations-list">
-          {recommendations.map(recommendation => (
+          {Array.isArray(recommendations) && recommendations.map(recommendation => (
             <div className="recommendation-item" key={recommendation.id}>
               <div className="recommendation-time">{recommendation.timeframe}</div>
               <div className="recommendation-content">

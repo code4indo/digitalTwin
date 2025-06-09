@@ -179,11 +179,22 @@ const EnvironmentalStatus = () => {
       let weatherData;
       try {
         weatherData = await fetchExternalWeatherData();
+        console.log('WEATHER DEBUG - Full data received:', JSON.stringify(weatherData, null, 2));
         if (DEBUG_ENV) console.log('Weather data received:', weatherData);
       } catch (weatherError) {
         if (DEBUG_ENV) console.warn('Warning: Could not fetch weather data:', weatherError);
         // Gunakan data dummy untuk cuaca jika gagal
-        weatherData = { condition: 'Tidak Tersedia', temperature: 30.0 };
+        weatherData = { 
+          condition: 'Tidak Tersedia', 
+          temperature: 30.0,
+          humidity: 65,
+          weather_data: {
+            weather_condition: 'Tidak Tersedia',
+            temperature: 30.0,
+            humidity: 65
+          },
+          data_source: 'Fallback - Connection Error'
+        };
       }
       
       // Fetch system health data
@@ -233,7 +244,7 @@ const EnvironmentalStatus = () => {
       }
       
       // Combine data
-      setEnvironmentData({
+      const finalEnvironmentData = {
         temperature: {
           avg: tempAvg,
           min: tempMin,
@@ -245,8 +256,21 @@ const EnvironmentalStatus = () => {
           max: humMax
         },
         weather: {
-          status: weatherData.condition || 'Cerah Berawan',
-          externalTemp: typeof weatherData.temperature === 'number' ? weatherData.temperature.toFixed(1) : '29.8'
+          status: weatherData.weather_data?.weather_condition || weatherData.condition || 'Cerah Berawan',
+          externalTemp: typeof weatherData.weather_data?.temperature === 'number' ? 
+            weatherData.weather_data.temperature.toFixed(1) : 
+            (typeof weatherData.temperature === 'number' ? weatherData.temperature.toFixed(1) : '29.8'),
+          externalHumidity: (() => {
+            const humidity = typeof weatherData.weather_data?.humidity === 'number' ? 
+              weatherData.weather_data.humidity.toFixed(0) : 
+              (typeof weatherData.humidity === 'number' ? weatherData.humidity.toFixed(0) : '65');
+            console.log('HUMIDITY DEBUG - Raw data:', weatherData.weather_data?.humidity, 'Processed:', humidity);
+            return humidity;
+          })(),
+          windSpeed: typeof weatherData.weather_data?.wind_speed === 'number' ?
+            weatherData.weather_data.wind_speed.toFixed(1) : null,
+          windDirection: weatherData.weather_data?.wind_direction || null,
+          dataSource: weatherData.data_source || 'Unknown'
         },
         system: {
           health: normalizedStatus, // Menggunakan status yang sudah dinormalisasi
@@ -256,7 +280,10 @@ const EnvironmentalStatus = () => {
           influxdbConnection: healthData.influxdb_connection || 'unknown',
           ratio: healthData.ratio_active_to_total || 0
         }
-      });
+      };
+      
+      console.log('FINAL ENVIRONMENT DATA - Weather section:', JSON.stringify(finalEnvironmentData.weather, null, 2));
+      setEnvironmentData(finalEnvironmentData);
       
       // Set last update time
       setLastUpdateTime(new Date());
@@ -407,8 +434,30 @@ const EnvironmentalStatus = () => {
             <div className="status-value weather-status" id="weather-status">
               {environmentData?.weather?.status || 'Memuat...'}
             </div>
-            <div className="weather-details" id="external-temperature">
-              Suhu Luar: {environmentData?.weather?.externalTemp || '...'}°C
+            <div className="weather-details">
+              <div id="external-temperature">
+                Suhu Luar: {environmentData?.weather?.externalTemp || '...'}°C
+              </div>
+              <div id="external-humidity" style={{display: 'block', visibility: 'visible', color: 'red', fontWeight: 'bold'}}>
+                Kelembapan Luar: {environmentData?.weather?.externalHumidity || 'TIDAK ADA DATA'}%
+              </div>
+              <div style={{color: 'orange', fontSize: '12px', marginTop: '5px'}}>
+                DEBUG: {JSON.stringify(environmentData?.weather, null, 2)}
+              </div>
+              {environmentData?.weather?.windSpeed && (
+                <div id="external-wind">
+                  Angin: {environmentData.weather.windSpeed} m/s {environmentData?.weather?.windDirection || ''}
+                </div>
+              )}
+              {environmentData?.weather?.dataSource && (
+                <div className="data-source" style={{fontSize: '0.8em', color: '#666', marginTop: '4px'}}>
+                  {environmentData.weather.dataSource.includes('Real-time') ? 
+                    '🟢 Data Real-time' : 
+                    environmentData.weather.dataSource.includes('Fallback') ? 
+                    '🟡 Data Fallback' : 
+                    '📡 ' + environmentData.weather.dataSource}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -76,7 +76,7 @@ const DebugComponent = () => {
       <p>API Reachable: {debugInfo.apiReachable ? '✅' : '❌'}</p>
       <p>Trend Data: {debugInfo.trendDataFetch ? '✅' : '❌'}</p>
       
-      {debugInfo.jsErrors.length > 0 && (
+      {Array.isArray(debugInfo.jsErrors) && debugInfo.jsErrors.length > 0 && (
         <div>
           <h4>JS Errors:</h4>
           {debugInfo.jsErrors.slice(0, 3).map((error, index) => (

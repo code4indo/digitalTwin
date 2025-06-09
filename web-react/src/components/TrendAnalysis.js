@@ -49,7 +49,7 @@ const TrendAnalysis = () => {
 
   // Transform API response data to Chart.js format
   const transformApiDataToChartFormat = (apiData, parameter) => {
-    if (!apiData || !apiData.timestamps || !apiData.values) {
+    if (!apiData || !Array.isArray(apiData.timestamps) || !Array.isArray(apiData.values)) {
       console.warn('Invalid API data structure:', apiData);
       return getDummyTrendData(activePeriod, parameter);
     }

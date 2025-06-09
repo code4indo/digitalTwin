@@ -235,3 +235,4 @@ sensor_data_archive/
 # Generated documentation
 docs/generated/
 api-docs/
+docs/SYSTEM_DOCUMENTATION.md

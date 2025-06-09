@@ -175,7 +175,7 @@ const RoomDetails = () => {
             <div className="devices-control">
               <h4>Kontrol Perangkat</h4>
               <div className="device-list">
-                {roomData.devices.map(device => (
+                {Array.isArray(roomData.devices) && roomData.devices.map(device => (
                   <div key={device.id} className={`device-item ${device.status}`}>
                     <div className="device-info">
                       <div className="device-name">{device.name}</div>

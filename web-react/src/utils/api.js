@@ -307,20 +307,183 @@ export const fetchRecommendations = async () => {
   }
 };
 
-// Function untuk mengambil pengaturan otomasi
-export const fetchAutomationSettings = async () => {
+// ML Model Training and Prediction Functions
+export const fetchMLTrainingStats = async (days_back = 7) => {
   try {
-    const response = await api.get('/automation/settings');
+    const response = await api.get(`/ml/training-data/stats?days_back=${days_back}`);
     return response.data;
   } catch (error) {
-    if (DEBUG_API) console.error('Error fetching automation settings:', error);
+    if (DEBUG_API) console.error('Error fetching ML training stats:', error);
     throw error;
   }
 };
 
-// Function untuk memperbarui pengaturan otomasi
+export const fetchMLPrediction = async (model_name = 'random_forest', hours_ahead = 1, location = null, device = null) => {
+  try {
+    let url = `/ml/model/predict?model_name=${model_name}&hours_ahead=${hours_ahead}`;
+    if (location) url += `&location=${location}`;
+    if (device) url += `&device=${device}`;
+    
+    const response = await api.post(url);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching ML prediction:', error);
+    throw error;
+  }
+};
+
+export const fetchMLModelList = async () => {
+  try {
+    const response = await api.get('/ml/model/list');
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching ML model list:', error);
+    throw error;
+  }
+};
+
+export const trainMLModel = async (model_type = 'random_forest', days_back = 30, save_model = true) => {
+  try {
+    const response = await api.post(`/ml/model/train?model_type=${model_type}&days_back=${days_back}&save_model=${save_model}`);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error training ML model:', error);
+    throw error;
+  }
+};
+
+export const compareMLModels = async (days_back = 7) => {
+  try {
+    const response = await api.get(`/ml/model/compare?days_back=${days_back}`);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error comparing ML models:', error);
+    throw error;
+  }
+};
+
+// Enhanced Predictive Analysis using ML models
+export const fetchEnhancedPredictiveAnalysis = async (params = {}) => {
+  try {
+    // Use the new ML prediction endpoint for more accurate predictions
+    const {
+      model = 'random_forest',
+      timeframe = '24h',
+      location = null,
+      device = null
+    } = params;
+    
+    // Generate predictions for multiple time horizons
+    const predictions = [];
+    const hours = timeframe === '24h' ? 24 : timeframe === '48h' ? 48 : 12;
+    
+    for (let i = 1; i <= hours; i += 2) { // Every 2 hours
+      try {
+        const prediction = await fetchMLPrediction(model, i, location, device);
+        predictions.push({
+          hour: i,
+          temperature: prediction.predictions.temperature,
+          humidity: prediction.predictions.humidity,
+          confidence_temp: prediction.confidence.temperature,
+          confidence_humidity: prediction.confidence.humidity,
+          timestamp: new Date(prediction.prediction_time).getTime()
+        });
+      } catch (err) {
+        // If ML prediction fails, use fallback data
+        console.warn(`Failed to get ML prediction for hour ${i}:`, err);
+      }
+    }
+    
+    if (predictions.length === 0) {
+      // Fallback to original predictive analysis
+      return await fetchPredictiveAnalysis(params);
+    }
+    
+    // Format data for Chart.js
+    const labels = predictions.map(p => `+${p.hour}h`);
+    const tempData = predictions.map(p => p.temperature);
+    const humidityData = predictions.map(p => p.humidity);
+    const tempConfidence = predictions.map(p => p.confidence_temp);
+    const humidityConfidence = predictions.map(p => p.confidence_humidity);
+    
+    return {
+      model_info: {
+        model_name: model,
+        version: '1.0.0',
+        accuracy: predictions.length > 0 ? Math.min(...tempConfidence, ...humidityConfidence) : 0.85,
+        predictions_count: predictions.length,
+        generated_at: new Date().toISOString()
+      },
+      temperature: {
+        labels: labels,
+        datasets: [{
+          label: 'Prediksi Suhu (°C)',
+          data: tempData,
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      humidity: {
+        labels: labels,
+        datasets: [{
+          label: 'Prediksi Kelembapan (%)',
+          data: humidityData,
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      predictions: predictions,
+      confidence: {
+        avg_temperature: tempConfidence.reduce((a, b) => a + b, 0) / tempConfidence.length || 0.85,
+        avg_humidity: humidityConfidence.reduce((a, b) => a + b, 0) / humidityConfidence.length || 0.80
+      }
+    };
+    
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching enhanced predictive analysis:', error);
+    // Fallback to original method
+    return await fetchPredictiveAnalysis(params);
+  }
+};
+
+// Automation Settings Functions
+export const fetchAutomationSettings = async () => {
+  try {
+    if (DEBUG_API) {
+      console.log('Requesting automation settings...');
+      console.log('URL:', `${API_BASE_URL}/automation/settings`);
+    }
+    
+    const response = await api.get('/automation/settings');
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching automation settings:', error);
+    
+    // Return default settings as fallback
+    return {
+      temperature_control: true,
+      humidity_control: true,
+      target_temperature: 24.0,
+      target_humidity: 60.0,
+      auto_alerts: true,
+      alert_threshold_temp: 27.0,
+      alert_threshold_humidity: 75.0
+    };
+  }
+};
+
 export const updateAutomationSettings = async (settings) => {
   try {
+    if (DEBUG_API) {
+      console.log('Updating automation settings...');
+      console.log('URL:', `${API_BASE_URL}/automation/settings`);
+      console.log('Settings:', settings);
+    }
+    
     const response = await api.put('/automation/settings', settings);
     return response.data;
   } catch (error) {

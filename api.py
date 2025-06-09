@@ -98,6 +98,10 @@ app.include_router(analysis_router)
 from routes.external_routes import router as external_router
 app.include_router(external_router)
 
+# Tambahkan router untuk machine learning
+from routes.ml_routes import router as ml_router
+app.include_router(ml_router)
+
 # Konfigurasi CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3003,http://10.13.0.4:3003") # Mendukung aplikasi React di localhost dan IP server
 origins_list = origins.split(",") if origins != "*" else ["*"]

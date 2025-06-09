@@ -225,7 +225,7 @@ footer {
 
 .model-controls {
     position: absolute;
-    bottom: var(--space-md);
+    top: var(--space-md);
     right: var(--space-md);
     display: flex;
     gap: var(--space-xs);
@@ -254,17 +254,20 @@ footer {
 
 .floor-selector {
     position: absolute;
-    top: var(--space-md);
+    bottom: var(--space-lg);
     left: var(--space-md);
+    right: var(--space-md);
     display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+    flex-direction: row;
+    gap: var(--space-lg);
     background-color: rgba(255,255,255,0.95);
     padding: var(--space-md);
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-md);
-    max-height: 80vh;
+    max-height: 30vh;
     overflow-y: auto;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .floor-group {
@@ -331,10 +334,11 @@ footer {
         border-radius: var(--border-radius-md);
         padding: var(--space-md);
         box-shadow: var(--shadow-md);
+        flex-direction: column;
     }
     
     .model-controls {
-        bottom: var(--space-sm);
+        top: var(--space-sm);
         right: var(--space-sm);
         gap: var(--space-xs);
     }

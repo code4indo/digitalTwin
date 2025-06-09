@@ -84,14 +84,15 @@ def process_and_write_data(raw_data):
                 # InfluxDB client mengharapkan objek datetime atau timestamp nanosecond
                 dt_object = datetime.strptime(entry["utc_datetime"], "%Y-%m-%d %H:%M:%S")
 
-                # Prepare visibility_km value
+                # Prepare visibility_km value - ensure consistent typing
                 visibility_raw = entry.get("vs_text", "").replace("> ", "").replace(" km", "").strip()
                 visibility_val = None
                 if visibility_raw: # Process only if not empty
                     try:
                         visibility_val = float(visibility_raw)
                     except ValueError:
-                        visibility_val = visibility_raw # Keep as string if conversion fails
+                        # If conversion fails, set a default numeric value
+                        visibility_val = 10.0  # Default visibility in km
                 
                 # Buat point dengan semua informasi yang tersedia
                 point_builder = Point("bmkg_weather_forecast") \

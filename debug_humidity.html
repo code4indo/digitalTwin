@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Kelembapan BMKG</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Debug Kelembapan Eksternal BMKG</h1>
+    <button onclick="testAPI()">Test API</button>
+    <button onclick="testReactLogic()">Test React Logic</button>
+    <div id="results"></div>
+
+    <script>
+        const API_KEY = 'development_key_for_testing';
+        
+        async function testAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div>🔍 Testing API...</div>';
+            
+            try {
+                const response = await fetch('/api/external/bmkg/latest', {
+                    headers: {
+                        'x-api-key': API_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const humidity = data.weather_data?.humidity;
+                    
+                    results.innerHTML += `
+                        <div class="result success">
+                            ✅ API Response OK<br>
+                            Raw humidity: ${humidity} (${typeof humidity})<br>
+                            Formatted: ${typeof humidity === 'number' ? humidity.toFixed(0) : '65'}%
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML += `<div class="result error">❌ API Error: ${response.status}</div>`;
+                }
+            } catch (error) {
+                results.innerHTML += `<div class="result error">❌ Fetch Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testReactLogic() {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div>🔄 Testing React Logic...</div>';
+            
+            try {
+                const response = await fetch('/api/external/bmkg/latest', {
+                    headers: {
+                        'x-api-key': API_KEY
+                    }
+                });
+                
+                const weatherData = await response.json();
+                
+                // Simulate exact React logic
+                const processed = {
+                    externalHumidity: typeof weatherData.weather_data?.humidity === 'number' ? 
+                        weatherData.weather_data.humidity.toFixed(0) : 
+                        (typeof weatherData.humidity === 'number' ? weatherData.humidity.toFixed(0) : '65')
+                };
+                
+                results.innerHTML += `
+                    <div class="result">
+                        📱 React Logic Output:<br>
+                        externalHumidity: ${processed.externalHumidity}%<br>
+                        Display: "Kelembapan Luar: ${processed.externalHumidity}%"
+                    </div>
+                `;
+                
+            } catch (error) {
+                results.innerHTML += `<div class="result error">❌ React Logic Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -37,7 +37,14 @@ const AlertsPanel = () => {
       try {
         setLoading(true);
         const data = await fetchAlerts(filter);
-        setAlerts(data || dummyAlerts);
+        // Ensure data is always an array
+        if (Array.isArray(data)) {
+          setAlerts(data);
+        } else if (data && Array.isArray(data.alerts)) {
+          setAlerts(data.alerts);
+        } else {
+          setAlerts(dummyAlerts);
+        }
         setError(null);
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {
@@ -106,7 +113,7 @@ const AlertsPanel = () => {
         <div className="error-message">{error}</div>
       ) : (
         <div className="alerts-list">
-          {alerts.length === 0 ? (
+          {!Array.isArray(alerts) || alerts.length === 0 ? (
             <div className="no-alerts">
               Tidak ada peringatan {filter !== 'all' ? `untuk filter "${filter}"` : ''}
             </div>

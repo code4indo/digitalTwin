@@ -200,6 +200,80 @@
   }
 }
 
+/* Model Information Card */
+.model-info-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: var(--space-md);
+  grid-column: span 3;
+  margin-bottom: var(--space-md);
+}
+
+@media (max-width: 1200px) {
+  .model-info-card {
+    grid-column: span 1;
+  }
+}
+
+.model-info-card h3 {
+  margin-bottom: var(--space-md);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.model-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-sm);
+}
+
+.stat-label {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.stat-value {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.status-active {
+  color: #4ade80;
+}
+
+.status-fallback {
+  color: #fbbf24;
+}
+
+.training-stats {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-sm);
+}
+
+.training-stats h4 {
+  margin-bottom: var(--space-sm);
+  font-size: 1rem;
+}
+
+.training-stats p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
 .prediction-card {
   background-color: var(--bg-color);
   border-radius: var(--border-radius-sm);
@@ -217,65 +291,35 @@
   position: relative;
 }
 
-/* Recommendation styles */
-.prediction-recommendations {
-  grid-column: span 1;
-}
-
-.recommendations-list {
+/* Loading and error states */
+.loading-indicator {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.recommendation-item {
-  display: flex;
-  padding: var(--space-sm) 0;
-  border-bottom: 1px solid var(--light-color);
-}
-
-.recommendation-time {
-  width: 100px;
-  font-size: 0.85rem;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.1rem;
   color: var(--text-muted);
-  font-weight: 500;
-  padding-right: var(--space-sm);
 }
 
-.recommendation-content {
-  flex: 1;
-}
-
-.recommendation-title {
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.recommendation-description {
-  font-size: 0.9rem;
-  color: var(--text-color);
-}
-
-.recommendation-actions {
-  margin-top: var(--space-sm);
-  text-align: right;
-}
-
-.action-btn {
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  background-color: transparent;
-  border: 1px solid var(--secondary-color);
-  color: var(--secondary-color);
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.1rem;
+  color: #dc2626;
+  background-color: #fef2f2;
   border-radius: var(--border-radius-sm);
-  cursor: pointer;
+  border: 1px solid #fecaca;
 }
 
-.action-btn:hover {
-  background-color: var(--secondary-color);
-  color: white;
+.no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 180px;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* Automation Controls Section */
