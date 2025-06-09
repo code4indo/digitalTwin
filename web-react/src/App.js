@@ -21,7 +21,7 @@ const App = () => {
       <div className="loading-screen">
         <div className="loading-container">
           <div className="loading-logo">
-            <img src="/img/digital-twin-logo.svg" alt="Digital Twin Logo" />
+            <img src="/img/logo_dt.png" alt="Digital Twin Logo" />
           </div>
           <div className="loading-text">Memuat Digital Twin...</div>
           <div className="loading-spinner"></div>

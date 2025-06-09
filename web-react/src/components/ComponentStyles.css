@@ -554,3 +554,137 @@
 .chart-error {
   color: var(--color-error, #d32f2f);
 }
+
+/* Error Boundary Styles */
+.error-boundary {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.error-boundary h2 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.error-boundary details {
+  margin: 15px 0;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.error-boundary summary {
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.retry-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: white;
+  color: #ff6b6b;
+  transform: translateY(-2px);
+}
+
+/* No Data States */
+.no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #7f8c8d;
+  font-style: italic;
+  text-align: center;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 2px dashed #dee2e6;
+}
+
+/* Loading Indicator Improvements */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #3498db;
+  font-weight: 500;
+}
+
+.loading-indicator::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid #3498db;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 10px;
+}
+
+/* Error Message Improvements */
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #e74c3c;
+  font-weight: 500;
+  text-align: center;
+  background: #ffeaea;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 20px;
+}
+
+/* Chart Container Safety */
+.prediction-chart-container, 
+.chart-container {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+
+.prediction-chart-container canvas,
+.chart-container canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Responsive improvements for error states */
+@media (max-width: 768px) {
+  .error-boundary {
+    padding: 15px;
+    margin: 10px 0;
+  }
+  
+  .error-boundary h2 {
+    font-size: 1.2rem;
+  }
+  
+  .retry-button {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  .no-data,
+  .loading-indicator,
+  .error-message {
+    height: 150px;
+    font-size: 14px;
+  }
+}

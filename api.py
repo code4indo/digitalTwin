@@ -74,6 +74,30 @@ app.include_router(stats_router)
 from routes.room_routes import router as room_router
 app.include_router(room_router)
 
+# Tambahkan router untuk analisis tren
+from routes.trend_routes import router as trend_router
+app.include_router(trend_router)
+
+# Tambahkan router untuk alerts
+from routes.alert_routes import router as alert_router
+app.include_router(alert_router)
+
+# Tambahkan router untuk recommendations
+from routes.recommendations_routes import router as recommendations_router
+app.include_router(recommendations_router)
+
+# Tambahkan router untuk automation
+from routes.automation_routes import router as automation_router
+app.include_router(automation_router)
+
+# Tambahkan router untuk analysis
+from routes.analysis_routes import router as analysis_router
+app.include_router(analysis_router)
+
+# Tambahkan router untuk external data
+from routes.external_routes import router as external_router
+app.include_router(external_router)
+
 # Konfigurasi CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3003,http://10.13.0.4:3003") # Mendukung aplikasi React di localhost dan IP server
 origins_list = origins.split(",") if origins != "*" else ["*"]

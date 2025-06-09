@@ -43,7 +43,7 @@ const PredictiveAnalysis = () => {
   }, [selectedModel, selectedTimeframe]);
   
   // Generate dummy prediction data for testing
-  const getDummyPredictionData = (timeframe) => {
+  const getDummyPredictionData = (timeframe = '24h') => {
     let hours = 24;
     let step = 1;
     
@@ -65,105 +65,174 @@ const PredictiveAnalysis = () => {
         step = 2;
     }
     
-    const currentHour = new Date().getHours();
-    const labels = Array.from({ length: Math.ceil(hours / step) }, (_, i) => {
-      const hour = (currentHour + i * step) % 24;
-      return `${hour}:00`;
-    });
-    
-    // Generate temperature prediction data with slight upward trend
-    const baseTemp = 22;
-    const tempData = Array.from({ length: labels.length }, (_, i) => {
-      const trend = i / labels.length * 2; // 0-2 degree increase over time
-      const random = Math.random() * 1 - 0.5; // -0.5 to 0.5 random variation
-      return baseTemp + trend + random;
-    });
-    
-    const temperatureData = {
-      labels,
-      datasets: [
-        {
-          label: 'Prediksi Suhu (°C)',
-          data: tempData,
-          borderColor: 'rgb(255, 99, 132)',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          fill: true,
-          tension: 0.4
+    try {
+      const currentHour = new Date().getHours();
+      const dataPoints = Math.ceil(hours / step);
+      const labels = Array.from({ length: dataPoints }, (_, i) => {
+        const hour = (currentHour + i * step) % 24;
+        return `${hour.toString().padStart(2, '0')}:00`;
+      });
+      
+      // Generate temperature prediction data with slight upward trend
+      const baseTemp = 22;
+      const tempData = Array.from({ length: labels.length }, (_, i) => {
+        const trend = (i / (labels.length - 1)) * 2; // 0-2 degree increase over time
+        const random = (Math.random() - 0.5) * 1; // -0.5 to 0.5 random variation
+        return Math.round((baseTemp + trend + random) * 10) / 10;
+      });
+      
+      const temperatureData = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Prediksi Suhu (°C)',
+            data: tempData,
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Batas Optimal',
+            data: Array(labels.length).fill(24),
+            borderColor: 'rgba(255, 99, 132, 0.5)',
+            borderDash: [5, 5],
+            fill: false,
+            pointRadius: 0
+          }
+        ]
+      };
+      
+      // Generate humidity prediction data
+      const baseHumidity = 50;
+      const humidityData = Array.from({ length: labels.length }, (_, i) => {
+        const trend = (i / (labels.length - 1)) * 5; // 0-5% increase over time
+        const random = (Math.random() - 0.5) * 3; // -1.5 to 1.5 random variation
+        return Math.round((baseHumidity + trend + random) * 10) / 10;
+      });
+      
+      const humidityChartData = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Prediksi Kelembapan (%)',
+            data: humidityData,
+            borderColor: 'rgb(53, 162, 235)',
+            backgroundColor: 'rgba(53, 162, 235, 0.2)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Batas Optimal',
+            data: Array(labels.length).fill(60),
+            borderColor: 'rgba(53, 162, 235, 0.5)',
+            borderDash: [5, 5],
+            fill: false,
+            pointRadius: 0
+          }
+        ]
+      };
+      
+      return {
+        temperature: temperatureData,
+        humidity: humidityChartData
+      };
+    } catch (error) {
+      console.error('Error generating dummy prediction data:', error);
+      // Return minimal fallback data
+      return {
+        temperature: {
+          labels: ['00:00', '06:00', '12:00', '18:00'],
+          datasets: [{
+            label: 'Prediksi Suhu (°C)',
+            data: [22, 23, 24, 23],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)'
+          }]
         },
-        {
-          label: 'Batas Optimal',
-          data: Array(labels.length).fill(24),
-          borderColor: 'rgba(255, 99, 132, 0.5)',
-          borderDash: [5, 5],
-          fill: false,
-          pointRadius: 0
+        humidity: {
+          labels: ['00:00', '06:00', '12:00', '18:00'],
+          datasets: [{
+            label: 'Prediksi Kelembapan (%)',
+            data: [50, 52, 55, 53],
+            borderColor: 'rgb(53, 162, 235)',
+            backgroundColor: 'rgba(53, 162, 235, 0.2)'
+          }]
         }
-      ]
-    };
-    
-    // Generate humidity prediction data
-    const baseHumidity = 50;
-    const humidityData = Array.from({ length: labels.length }, (_, i) => {
-      const trend = i / labels.length * 5; // 0-5% increase over time
-      const random = Math.random() * 3 - 1.5; // -1.5 to 1.5 random variation
-      return baseHumidity + trend + random;
-    });
-    
-    const humidityChartData = {
-      labels,
-      datasets: [
-        {
-          label: 'Prediksi Kelembapan (%)',
-          data: humidityData,
-          borderColor: 'rgb(53, 162, 235)',
-          backgroundColor: 'rgba(53, 162, 235, 0.2)',
-          fill: true,
-          tension: 0.4
-        },
-        {
-          label: 'Batas Optimal',
-          data: Array(labels.length).fill(60),
-          borderColor: 'rgba(53, 162, 235, 0.5)',
-          borderDash: [5, 5],
-          fill: false,
-          pointRadius: 0
-        }
-      ]
-    };
-    
-    return {
-      temperature: temperatureData,
-      humidity: humidityChartData
-    };
+      };
+    }
   };
   
-  // Chart options
+  // Chart options with better error handling
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
     plugins: {
       legend: {
         position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20
+        }
       },
       tooltip: {
-        backgroundColor: 'rgba(52, 73, 94, 0.8)',
+        backgroundColor: 'rgba(52, 73, 94, 0.9)',
         titleFont: { size: 14, weight: 'bold' },
-        bodyFont: { size: 13 },
+        bodyFont: { size: 12 },
         padding: 12,
-        cornerRadius: 6
+        cornerRadius: 8,
+        displayColors: true,
+        callbacks: {
+          label: function(context) {
+            try {
+              const label = context.dataset.label || '';
+              const value = typeof context.parsed?.y === 'number' ? 
+                context.parsed.y.toFixed(1) : 
+                (context.raw || 0).toString();
+              return `${label}: ${value}`;
+            } catch (error) {
+              console.warn('Tooltip callback error:', error);
+              return 'Data tidak tersedia';
+            }
+          }
+        }
       }
     },
     scales: {
-      y: {
-        beginAtZero: false,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)'
-        }
-      },
       x: {
+        display: true,
         grid: {
           display: false
+        },
+        ticks: {
+          maxRotation: 45,
+          minRotation: 0
         }
+      },
+      y: {
+        beginAtZero: false,
+        display: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)'
+        },
+        ticks: {
+          callback: function(value) {
+            return typeof value === 'number' ? value.toFixed(1) : value;
+          }
+        }
+      }
+    },
+    elements: {
+      line: {
+        tension: 0.4
+      },
+      point: {
+        radius: 3,
+        hoverRadius: 6
       }
     }
   };
@@ -205,16 +274,20 @@ const PredictiveAnalysis = () => {
           <div className="prediction-card">
             <h3>Prediksi Suhu</h3>
             <div className="prediction-chart-container">
-              {temperatureData && (
+              {temperatureData && temperatureData.datasets && temperatureData.datasets.length > 0 ? (
                 <Line data={temperatureData} options={options} />
+              ) : (
+                <div className="no-data">Data prediksi suhu tidak tersedia</div>
               )}
             </div>
           </div>
           <div className="prediction-card">
             <h3>Prediksi Kelembapan</h3>
             <div className="prediction-chart-container">
-              {humidityData && (
+              {humidityData && humidityData.datasets && humidityData.datasets.length > 0 ? (
                 <Line data={humidityData} options={options} />
+              ) : (
+                <div className="no-data">Data prediksi kelembapan tidak tersedia</div>
               )}
             </div>
           </div>

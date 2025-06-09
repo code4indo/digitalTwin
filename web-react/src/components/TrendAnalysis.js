@@ -27,10 +27,15 @@ const TrendAnalysis = () => {
           parameter: selectedParameter
         });
         
-        setTrendData(data);
+        // Transform API response to Chart.js format
+        const transformedData = transformApiDataToChartFormat(data, selectedParameter);
+        setTrendData(transformedData);
         setError(null);
       } catch (err) {
-        console.error('Error fetching trend data:', err);
+        // Silent error handling in production, log only in debug mode
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching trend data:', err);
+        }
         setError('Gagal memuat data tren. Silakan coba lagi.');
         // Use dummy data if API fails
         setTrendData(getDummyTrendData(activePeriod, selectedParameter));
@@ -41,6 +46,40 @@ const TrendAnalysis = () => {
     
     fetchData();
   }, [activePeriod, selectedLocation, selectedParameter]);
+
+  // Transform API response data to Chart.js format
+  const transformApiDataToChartFormat = (apiData, parameter) => {
+    if (!apiData || !apiData.timestamps || !apiData.values) {
+      console.warn('Invalid API data structure:', apiData);
+      return getDummyTrendData(activePeriod, parameter);
+    }
+
+    // Use timestamps as labels, but simplify for better readability
+    const labels = apiData.timestamps.map((timestamp, index) => {
+      // For day view, show every few hours to avoid clutter
+      if (activePeriod === 'day' && index % 7 === 0) {
+        return timestamp;
+      } else if (activePeriod === 'day') {
+        return ''; // Hide some labels to avoid overcrowding
+      }
+      return timestamp;
+    });
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: parameter === 'temperature' ? 'Suhu (°C)' : 'Kelembapan (%)',
+          data: apiData.values,
+          borderColor: parameter === 'temperature' ? 'rgb(231, 76, 60)' : 'rgb(52, 152, 219)',
+          backgroundColor: parameter === 'temperature' ? 'rgba(231, 76, 60, 0.5)' : 'rgba(52, 152, 219, 0.5)',
+          tension: 0.4,
+          pointRadius: 1, // Small points to avoid clutter
+          pointHoverRadius: 4
+        }
+      ]
+    };
+  };
   
   // Generate dummy trend data for testing
   const getDummyTrendData = (period, parameter) => {
@@ -185,9 +224,11 @@ const TrendAnalysis = () => {
             <div className="loading-indicator">Memuat data tren...</div>
           ) : error ? (
             <div className="error-message">{error}</div>
-          ) : trendData ? (
+          ) : trendData && trendData.datasets && trendData.datasets.length > 0 ? (
             <Line ref={chartRef} data={trendData} options={options} />
-          ) : null}
+          ) : (
+            <div className="no-data">Data tren tidak tersedia</div>
+          )}
         </div>
         
         <div className="period-selector">

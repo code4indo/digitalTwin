@@ -1,5 +1,5 @@
 """
-Temperature-related Flux Queries
+Temperature-related Flux Quer              identity: {"avg": 0.0, "min": 1000.0, "max": -1000.0, "count": 0.0},es
 Berisi kueri untuk statistik suhu dari perangkat sensor
 """
 
@@ -40,9 +40,9 @@ def get_temperature_stats_query(bucket, range_filter_str, location_filter=""):
               }})
           )
           |> map(fn: (r) => ({{
-              avg_temperature: if r.count > 0.0 then r.avg / r.count else nil,
-              min_temperature: if r.count > 0.0 then r.min else nil,
-              max_temperature: if r.count > 0.0 then r.max else nil,
+              avg_temperature: if r.count > 0.0 then r.avg / r.count else 0.0,
+              min_temperature: if r.count > 0.0 then r.min else 0.0,
+              max_temperature: if r.count > 0.0 then r.max else 0.0,
               sample_count: r.count
           }}))
     '''

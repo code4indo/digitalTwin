@@ -1,4 +1,5 @@
 import React from 'react';
+import ErrorBoundary from './ErrorBoundary';
 import BuildingModel from './BuildingModel';
 import EnvironmentalStatus from './EnvironmentalStatus';
 import AlertsPanel from './AlertsPanel';
@@ -15,14 +16,18 @@ const Dashboard = () => {
         <BuildingModel />
         <EnvironmentalStatus />
         <AlertsPanel />
-        <TrendAnalysis />
+        <ErrorBoundary>
+          <TrendAnalysis />
+        </ErrorBoundary>
       </section>
       
       {/* Room Details Section */}
       <RoomDetails />
       
       {/* Predictive Analysis Section */}
-      <PredictiveAnalysis />
+      <ErrorBoundary>
+        <PredictiveAnalysis />
+      </ErrorBoundary>
       
       {/* Automation Controls Section */}
       <AutomationControls />

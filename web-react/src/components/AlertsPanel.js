@@ -40,7 +40,9 @@ const AlertsPanel = () => {
         setAlerts(data || dummyAlerts);
         setError(null);
       } catch (err) {
-        console.error('Error fetching alerts:', err);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching alerts:', err);
+        }
         setAlerts(dummyAlerts);
         setError('Gagal memuat peringatan terbaru');
       } finally {

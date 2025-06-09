@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { fetchLatestEnvironmentalStatus, fetchExternalWeatherData, fetchSystemHealth } from '../utils/api';
 
+// Debug flag untuk development
+const DEBUG_ENV = process.env.NODE_ENV === 'development' && process.env.REACT_APP_DEBUG_ENV === 'true';
+
 // Helper function untuk menentukan warna status kesehatan sistem
 const getHealthStatusColor = (status) => {
   // Debugging untuk melihat status yang masuk
-  console.log('Status received for color:', status);
+  if (DEBUG_ENV) console.log('Status received for color:', status);
   
   // Normalize status untuk konsistensi
   const normalizedStatus = status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '';
-  console.log('Normalized status for color:', normalizedStatus);
+  if (DEBUG_ENV) console.log('Normalized status for color:', normalizedStatus);
   
   switch(normalizedStatus) {
     case 'Optimal':
@@ -20,7 +23,7 @@ const getHealthStatusColor = (status) => {
     case 'Critical':
       return '#dc3545'; // Red - perlu tindakan segera
     default:
-      console.log('Status tidak cocok dengan kasus yang ada, menggunakan default color');
+      if (DEBUG_ENV) console.log('Status tidak cocok dengan kasus yang ada, menggunakan default color');
       return '#6c757d'; // Gray untuk status loading atau tidak dikenal
   }
 };
@@ -101,11 +104,11 @@ const Tooltip = ({ children }) => {
 
 // Helper component untuk menampilkan penjelasan status sistem
 const StatusExplainer = ({ status }) => {
-  console.log('Status received for explanation:', status);
+  if (DEBUG_ENV) console.log('Status received for explanation:', status);
   
   // Normalize status untuk konsistensi
   const normalizedStatus = status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '';
-  console.log('Normalized status for explanation:', normalizedStatus);
+  if (DEBUG_ENV) console.log('Normalized status for explanation:', normalizedStatus);
   
   // Mapping status ke penjelasan
   const explanations = {
@@ -160,15 +163,15 @@ const EnvironmentalStatus = () => {
       // Hapus error sebelumnya jika ada
       setError(null);
         
-      console.log('Fetching environmental data...');
+      if (DEBUG_ENV) console.log('Fetching environmental data...');
       
       // Fetch sensor data (temperature, humidity)
       let envData;
       try {
         envData = await fetchLatestEnvironmentalStatus();
-        console.log('Environmental data received:', envData);
+        if (DEBUG_ENV) console.log('Environmental data received:', envData);
       } catch (envError) {
-        console.error('Error fetching environmental data:', envError);
+        if (DEBUG_ENV) console.error('Error fetching environmental data:', envError);
         throw new Error(`Data lingkungan gagal dimuat: ${envError.message}`);
       }
       
@@ -176,9 +179,9 @@ const EnvironmentalStatus = () => {
       let weatherData;
       try {
         weatherData = await fetchExternalWeatherData();
-        console.log('Weather data received:', weatherData);
+        if (DEBUG_ENV) console.log('Weather data received:', weatherData);
       } catch (weatherError) {
-        console.warn('Warning: Could not fetch weather data:', weatherError);
+        if (DEBUG_ENV) console.warn('Warning: Could not fetch weather data:', weatherError);
         // Gunakan data dummy untuk cuaca jika gagal
         weatherData = { condition: 'Tidak Tersedia', temperature: 30.0 };
       }
@@ -187,9 +190,9 @@ const EnvironmentalStatus = () => {
       let healthData;
       try {
         healthData = await fetchSystemHealth();
-        console.log('Health data received in component:', healthData);
+        if (DEBUG_ENV) console.log('Health data received in component:', healthData);
       } catch (healthError) {
-        console.error('Error fetching health data:', healthError);
+        if (DEBUG_ENV) console.error('Error fetching health data:', healthError);
         // Gunakan data dummy untuk sistem kesehatan jika gagal
         healthData = { 
           status: 'Unknown', 
@@ -203,11 +206,11 @@ const EnvironmentalStatus = () => {
       // Validasi data kesehatan sistem
       const normalizedStatus = healthData && healthData.status ? 
         healthData.status.charAt(0).toUpperCase() + healthData.status.slice(1).toLowerCase() : 'Unknown';
-      console.log('Normalized status in component:', normalizedStatus);
+      if (DEBUG_ENV) console.log('Normalized status in component:', normalizedStatus);
       
       // Validasi data suhu dan kelembapan
       if (!envData || !envData.temperature || !envData.humidity) {
-        console.warn('Invalid environmental data received, using fallback values');
+        if (DEBUG_ENV) console.warn('Invalid environmental data received, using fallback values');
         envData = { 
           temperature: { average: 22.5, min: 19.2, max: 24.8 },
           humidity: { average: 48, min: 42, max: 53 }
@@ -224,8 +227,10 @@ const EnvironmentalStatus = () => {
       const humMin = typeof envData.humidity.min === 'number' ? envData.humidity.min.toFixed(0) : '0';
       const humMax = typeof envData.humidity.max === 'number' ? envData.humidity.max.toFixed(0) : '0';
       
-      console.log('Processed temperature values:', { tempAvg, tempMin, tempMax });
-      console.log('Processed humidity values:', { humAvg, humMin, humMax });
+      if (DEBUG_ENV) {
+        console.log('Processed temperature values:', { tempAvg, tempMin, tempMax });
+        console.log('Processed humidity values:', { humAvg, humMin, humMax });
+      }
       
       // Combine data
       setEnvironmentData({
@@ -259,15 +264,17 @@ const EnvironmentalStatus = () => {
       setLoading(false);
       setRefreshing(false);
     } catch (err) {
-      console.error('Error fetching environmental data:', err);
+      if (DEBUG_ENV) console.error('Error fetching environmental data:', err);
       
       // Informasi error yang lebih detail
       let errorMessage = 'Gagal memuat data lingkungan. Mencoba lagi dalam 30 detik.';
       
       // Jika ada respons error dari API, tampilkan detailnya
       if (err.response) {
-        console.error('Error response:', err.response.data);
-        console.error('Error status:', err.response.status);
+        if (DEBUG_ENV) {
+          console.error('Error response:', err.response.data);
+          console.error('Error status:', err.response.status);
+        }
         errorMessage += ` (Status: ${err.response.status})`;
       } else if (err.message) {
         errorMessage = err.message;
@@ -292,7 +299,7 @@ const EnvironmentalStatus = () => {
   }, [fetchData]);
   
   // Show loading/error state
-  if (loading && !environmentData.temperature.avg) {
+  if (loading && (!environmentData.temperature || !environmentData.temperature.avg || environmentData.temperature.avg === '...')) {
     return (
       <div className="card environmental-status">
         <h2>Status Iklim Mikro</h2>
@@ -368,11 +375,11 @@ const EnvironmentalStatus = () => {
           <div className="status-details">
             <h3>Suhu Rata-rata</h3>
             <div className="status-value" id="avg-temperature">
-              {environmentData.temperature.avg}°C
+              {environmentData?.temperature?.avg || '...'}°C
             </div>
             <div className="status-range">
-              Min: <span id="min-temperature">{environmentData.temperature.min}°C</span> | 
-              Max: <span id="max-temperature">{environmentData.temperature.max}°C</span>
+              Min: <span id="min-temperature">{environmentData?.temperature?.min || '...'}°C</span> | 
+              Max: <span id="max-temperature">{environmentData?.temperature?.max || '...'}°C</span>
             </div>
           </div>
         </div>
@@ -383,11 +390,11 @@ const EnvironmentalStatus = () => {
           <div className="status-details">
             <h3>Kelembapan Rata-rata</h3>
             <div className="status-value" id="avg-humidity">
-              {environmentData.humidity.avg}%
+              {environmentData?.humidity?.avg || '...'}%
             </div>
             <div className="status-range">
-              Min: <span id="min-humidity">{environmentData.humidity.min}%</span> | 
-              Max: <span id="max-humidity">{environmentData.humidity.max}%</span>
+              Min: <span id="min-humidity">{environmentData?.humidity?.min || '...'}%</span> | 
+              Max: <span id="max-humidity">{environmentData?.humidity?.max || '...'}%</span>
             </div>
           </div>
         </div>
@@ -398,10 +405,10 @@ const EnvironmentalStatus = () => {
           <div className="status-details">
             <h3>Cuaca Eksternal (BMKG)</h3>
             <div className="status-value weather-status" id="weather-status">
-              {environmentData.weather.status}
+              {environmentData?.weather?.status || 'Memuat...'}
             </div>
             <div className="weather-details" id="external-temperature">
-              Suhu Luar: {environmentData.weather.externalTemp}°C
+              Suhu Luar: {environmentData?.weather?.externalTemp || '...'}°C
             </div>
           </div>
         </div>
@@ -412,27 +419,27 @@ const EnvironmentalStatus = () => {
           <div className="status-details">
             <h3>Status Kesehatan Sistem</h3>
             <div 
-              className={`status-value health-status ${environmentData.system.healthUpdated ? 'updated-data' : ''}`} 
+              className={`status-value health-status ${environmentData?.system?.healthUpdated ? 'updated-data' : ''}`} 
               id="system-health" 
               style={{
                 color: '#fff',
-                backgroundColor: getHealthStatusColor(environmentData.system.health),
+                backgroundColor: getHealthStatusColor(environmentData?.system?.health),
                 padding: '4px 8px',
                 borderRadius: '4px',
                 display: 'inline-block'
               }}>
-              {environmentData.system.health}
-              {environmentData.system.healthUpdated && <small style={{fontSize: '0.7em', marginLeft: '5px'}}> ✓</small>}
+              {environmentData?.system?.health || 'Memuat...'}
+              {environmentData?.system?.healthUpdated && <small style={{fontSize: '0.7em', marginLeft: '5px'}}> ✓</small>}
             </div>
-            {environmentData.system.health !== 'Memuat...' && <StatusExplainer status={environmentData.system.health} />}
+            {environmentData?.system?.health !== 'Memuat...' && <StatusExplainer status={environmentData?.system?.health} />}
             <div className="health-details">
-              Perangkat Aktif: <span id="active-devices" className={environmentData.system.activeDevicesUpdated ? 'updated-data' : ''}>
-                {environmentData.system.activeDevices}
-                {environmentData.system.activeDevicesUpdated && <small style={{fontSize: '0.7em', marginLeft: '2px'}}> ✓</small>}
+              Perangkat Aktif: <span id="active-devices" className={environmentData?.system?.activeDevicesUpdated ? 'updated-data' : ''}>
+                {environmentData?.system?.activeDevices || '...'}
+                {environmentData?.system?.activeDevicesUpdated && <small style={{fontSize: '0.7em', marginLeft: '2px'}}> ✓</small>}
               </span>
               
               {/* Progressive bar for device ratio */}
-              {environmentData.system.activeDevices !== '...' && (
+              {environmentData?.system?.activeDevices !== '...' && (
                 <div style={{marginTop: '6px'}}>
                   <div style={{
                     width: '100%',
@@ -442,8 +449,8 @@ const EnvironmentalStatus = () => {
                     marginTop: '4px'
                   }}>
                     <div style={{
-                      width: `${extractRatio(environmentData.system.activeDevices) * 100}%`,
-                      backgroundColor: getDeviceRatioColor(extractRatio(environmentData.system.activeDevices)),
+                      width: `${extractRatio(environmentData?.system?.activeDevices) * 100}%`,
+                      backgroundColor: getDeviceRatioColor(extractRatio(environmentData?.system?.activeDevices)),
                       height: '8px',
                       borderRadius: '4px',
                       transition: 'width 0.3s ease'
@@ -453,15 +460,15 @@ const EnvironmentalStatus = () => {
               )}
               
               {/* InfluxDB Connection Status */}
-              {environmentData.system.influxdbConnection && (
+              {environmentData?.system?.influxdbConnection && (
                 <div style={{marginTop: '8px', fontSize: '0.85em'}}>
                   InfluxDB: 
                   <span style={{
-                    color: environmentData.system.influxdbConnection === 'connected' ? '#28a745' : '#dc3545',
+                    color: environmentData?.system?.influxdbConnection === 'connected' ? '#28a745' : '#dc3545',
                     fontWeight: 'bold',
                     marginLeft: '5px'
                   }}>
-                    {environmentData.system.influxdbConnection === 'connected' ? 'Terhubung ✓' : 'Terputus ✗'}
+                    {environmentData?.system?.influxdbConnection === 'connected' ? 'Terhubung ✓' : 'Terputus ✗'}
                   </span>
                 </div>
               )}

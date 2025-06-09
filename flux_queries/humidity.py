@@ -1,6 +1,5 @@
 """
-Humidity-related Flux Queries
-Berisi kueri untuk statistik kelembaban dari perangkat sensor
+Humidity-related Flux Queries              identity: {"avg": 0.0, "min": 1000.0, "max": -1000.0, "count": 0.0},Berisi kueri untuk statistik kelembaban dari perangkat sensor
 """
 
 
@@ -40,9 +39,9 @@ def get_humidity_stats_query(bucket, range_filter_str, location_filter=""):
               }})
           )
           |> map(fn: (r) => ({{
-              avg_humidity: if r.count > 0.0 then r.avg / r.count else nil,
-              min_humidity: if r.count > 0.0 then r.min else nil,
-              max_humidity: if r.count > 0.0 then r.max else nil,
+              avg_humidity: if r.count > 0.0 then r.avg / r.count else 0.0,
+              min_humidity: if r.count > 0.0 then r.min else 0.0,
+              max_humidity: if r.count > 0.0 then r.max else 0.0,
               sample_count: r.count
           }}))
     '''

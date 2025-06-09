@@ -44,3 +44,11 @@ grafana = 3001
 influxDB = 8086
 web-react = 3003
 API Server =  8002
+
+warning:
+jangan lupa menggunakan api key saat menguji API endpoint, api key yang digunakna adalah = development_key_for_testing
+ingat seluruh layanan berjalan di atas docker 
+jika terjadi perubahan kode jangan lupa sinkronisasi data antara host dan container 
+data grafik diambil dari query influxDB
+jika query influxDB belum ada jangan lupa untuk membuatnya 
+jangan lupa mencari tahu konfigurasi / setting yang ada sebelum menghasilkan kode

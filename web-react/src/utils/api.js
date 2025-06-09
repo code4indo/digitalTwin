@@ -1,9 +1,12 @@
 import axios from 'axios';
 
 // Konstanta untuk API
+// Debug flag untuk development
+const DEBUG_API = process.env.NODE_ENV === 'development' && process.env.REACT_APP_DEBUG_API === 'true';
+
 // Ambil API key dari environment variable atau gunakan fallback untuk development
 const API_KEY = process.env.REACT_APP_API_KEY || localStorage.getItem('api_key') || 'development_key_for_testing';
-console.log('Using API Key:', API_KEY);
+if (DEBUG_API) console.log('Using API Key:', API_KEY);
   
 // Ambil base URL dari environment variable atau gunakan fallback berdasarkan environment
 let API_BASE_URL = process.env.REACT_APP_API_URL;
@@ -14,18 +17,19 @@ if (!API_BASE_URL) {
   } else {
     // Coba deteksi host otomatis
     const currentHost = window.location.hostname;
-    API_BASE_URL = `http://${currentHost}:8002`;
+    const currentPort = window.location.port;
     
-    // Fallback jika kita yakin IP server tertentu (untuk development)
-    if (currentHost === 'localhost') {
+    // Untuk development, gunakan host yang sama dengan port API
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
       API_BASE_URL = 'http://localhost:8002';
-    } else if (currentHost === '10.13.0.4') {
-      API_BASE_URL = 'http://10.13.0.4:8002';
+    } else {
+      // Untuk container atau IP lain, gunakan IP yang sama dengan port API
+      API_BASE_URL = `http://${currentHost}:8002`;
     }
   }
 }
 
-console.log('Using API Base URL:', API_BASE_URL);
+if (DEBUG_API) console.log('Using API Base URL:', API_BASE_URL);
 
 // Buat instance axios dengan konfigurasi default
 const api = axios.create({
@@ -40,7 +44,7 @@ const api = axios.create({
 // Tambahkan interceptor untuk request
 api.interceptors.request.use(
   config => {
-    console.log(`Request [${config.method.toUpperCase()}] to ${config.url}`);
+    if (DEBUG_API) console.log(`Request [${config.method.toUpperCase()}] to ${config.url}`);
     
     // Pastikan header X-API-Key dikirim pada setiap permintaan
     if (!config.headers['X-API-Key'] && API_KEY) {
@@ -49,7 +53,7 @@ api.interceptors.request.use(
     return config;
   },
   error => {
-    console.error('Request error:', error);
+    if (DEBUG_API) console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -57,19 +61,19 @@ api.interceptors.request.use(
 // Tambahkan interceptor untuk response untuk debugging
 api.interceptors.response.use(
   response => {
-    console.log(`Response from ${response.config.url}:`, response.status);
+    if (DEBUG_API) console.log(`Response from ${response.config.url}:`, response.status);
     return response;
   },
   error => {
     if (error.response) {
       // Server merespon dengan kode status diluar rentang 2xx
-      console.error(`API error [${error.response.status}] from ${error.config.url}:`, error.response.data);
+      if (DEBUG_API) console.error(`API error [${error.response.status}] from ${error.config.url}:`, error.response.data);
     } else if (error.request) {
       // Permintaan dibuat tapi tidak menerima respon
-      console.error('No response received:', error.request);
+      if (DEBUG_API) console.error('No response received:', error.request);
     } else {
       // Kesalahan saat menyiapkan permintaan
-      console.error('Error setting up request:', error.message);
+      if (DEBUG_API) console.error('Error setting up request:', error.message);
     }
     return Promise.reject(error);
   }
@@ -88,7 +92,7 @@ export const fetchSensorData = async (params = {}) => {
 
 export const fetchLatestEnvironmentalStatus = async () => {
   try {
-    console.log('Fetching environmental data...');
+    if (DEBUG_API) console.log('Fetching environmental data...');
     
     // Tambahkan parameter pada URL untuk mengatasi masalah API key
     const urlParams = {
@@ -101,13 +105,15 @@ export const fetchLatestEnvironmentalStatus = async () => {
     // Ambil statistik suhu dalam 1 jam terakhir (rata-rata, min, max)
     let tempResponse;
     try {
-      console.log('Fetching temperature stats...');
+      if (DEBUG_API) console.log('Fetching temperature stats...');
       tempResponse = await api.get('/stats/temperature/last-hour/stats/', urlParams);
-      console.log('Temperature response:', tempResponse.data);
+      if (DEBUG_API) console.log('Temperature response:', tempResponse.data);
     } catch (tempError) {
-      console.error('Error fetching temperature data:', tempError.message, tempError.code);
-      console.log('Temperature request failed with config:', tempError.config);
-      console.log('Status:', tempError.response ? tempError.response.status : 'No response');
+      if (DEBUG_API) {
+        console.error('Error fetching temperature data:', tempError.message, tempError.code);
+        console.log('Temperature request failed with config:', tempError.config);
+        console.log('Status:', tempError.response ? tempError.response.status : 'No response');
+      }
       // Tetap lanjutkan untuk mencoba endpoint humidity
       tempResponse = { data: null };
     }
@@ -115,13 +121,15 @@ export const fetchLatestEnvironmentalStatus = async () => {
     // Ambil statistik kelembapan dalam 1 jam terakhir (rata-rata, min, max)
     let humidityResponse;
     try {
-      console.log('Fetching humidity stats...');
+      if (DEBUG_API) console.log('Fetching humidity stats...');
       humidityResponse = await api.get('/stats/humidity/last-hour/stats/', urlParams);
-      console.log('Humidity response:', humidityResponse.data);
+      if (DEBUG_API) console.log('Humidity response:', humidityResponse.data);
     } catch (humidityError) {
-      console.error('Error fetching humidity data:', humidityError.message, humidityError.code);
-      console.log('Humidity request failed with config:', humidityError.config);
-      console.log('Status:', humidityError.response ? humidityError.response.status : 'No response');
+      if (DEBUG_API) {
+        console.error('Error fetching humidity data:', humidityError.message, humidityError.code);
+        console.log('Humidity request failed with config:', humidityError.config);
+        console.log('Status:', humidityError.response ? humidityError.response.status : 'No response');
+      }
       humidityResponse = { data: null };
     }
     
@@ -165,7 +173,7 @@ export const fetchLatestEnvironmentalStatus = async () => {
       }
     };
   } catch (error) {
-    console.error('Error fetching environmental status:', error);
+    if (DEBUG_API) console.error('Error fetching environmental status:', error);
     
     // Fallback ke data dummy jika API gagal
     return {
@@ -188,18 +196,20 @@ export const fetchExternalWeatherData = async () => {
     const response = await api.get('/external/bmkg/latest');
     return response.data;
   } catch (error) {
-    console.error('Error fetching external weather data:', error);
+    if (DEBUG_API) console.error('Error fetching external weather data:', error);
     throw error;
   }
 };
 
 export const fetchSystemHealth = async () => {
   try {
-    console.log('Requesting system health data...');
-    console.log('URL:', `${API_BASE_URL}/system/health/`);
+    if (DEBUG_API) {
+      console.log('Requesting system health data...');
+      console.log('URL:', `${API_BASE_URL}/system/health/`);
+    }
     
     const response = await api.get('/system/health/');
-    console.log('System health API response:', response.data);
+    if (DEBUG_API) console.log('System health API response:', response.data);
     
     // Pastikan status yang diterima dalam format yang konsisten
     if (response.data && response.data.status) {
@@ -208,15 +218,17 @@ export const fetchSystemHealth = async () => {
       response.data.status = normalizedStatus;
       
       // Logging untuk debuging
-      console.log('Normalized status:', response.data.status);
+      if (DEBUG_API) console.log('Normalized status:', response.data.status);
     }
     
     return response.data;
   } catch (error) {
-    console.error('Error fetching system health:', error);
-    if (error.response) {
-      console.error('Status:', error.response.status);
-      console.error('Data:', error.response.data);
+    if (DEBUG_API) {
+      console.error('Error fetching system health:', error);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Data:', error.response.data);
+      }
     }
     throw error;
   }
@@ -227,7 +239,7 @@ export const fetchAlerts = async (filter = 'all') => {
     const response = await api.get(`/alerts?filter=${filter}`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching alerts:', error);
+    if (DEBUG_API) console.error('Error fetching alerts:', error);
     throw error;
   }
 };
@@ -237,7 +249,7 @@ export const fetchRoomData = async (roomId) => {
     const response = await api.get(`/rooms/${roomId}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching room ${roomId} data:`, error);
+    if (DEBUG_API) console.error(`Error fetching room ${roomId} data:`, error);
     throw error;
   }
 };
@@ -247,7 +259,7 @@ export const fetchTrendData = async (params = {}) => {
     const response = await api.get('/data/trends', { params });
     return response.data;
   } catch (error) {
-    console.error('Error fetching trend data:', error);
+    if (DEBUG_API) console.error('Error fetching trend data:', error);
     throw error;
   }
 };
@@ -257,7 +269,7 @@ export const fetchPredictions = async (params = {}) => {
     const response = await api.get('/predictions', { params });
     return response.data;
   } catch (error) {
-    console.error('Error fetching predictions:', error);
+    if (DEBUG_API) console.error('Error fetching predictions:', error);
     throw error;
   }
 };
@@ -268,7 +280,7 @@ export const fetchRoomDetails = async (roomId) => {
     const response = await api.get(`/rooms/${roomId}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching room details for ${roomId}:`, error);
+    if (DEBUG_API) console.error(`Error fetching room details for ${roomId}:`, error);
     throw error;
   }
 };
@@ -279,7 +291,7 @@ export const fetchPredictiveAnalysis = async (params = {}) => {
     const response = await api.get('/analysis/predictive', { params });
     return response.data;
   } catch (error) {
-    console.error('Error fetching predictive analysis:', error);
+    if (DEBUG_API) console.error('Error fetching predictive analysis:', error);
     throw error;
   }
 };
@@ -290,7 +302,7 @@ export const fetchRecommendations = async () => {
     const response = await api.get('/recommendations/proactive');
     return response.data;
   } catch (error) {
-    console.error('Error fetching recommendations:', error);
+    if (DEBUG_API) console.error('Error fetching recommendations:', error);
     throw error;
   }
 };
@@ -301,7 +313,7 @@ export const fetchAutomationSettings = async () => {
     const response = await api.get('/automation/settings');
     return response.data;
   } catch (error) {
-    console.error('Error fetching automation settings:', error);
+    if (DEBUG_API) console.error('Error fetching automation settings:', error);
     throw error;
   }
 };
@@ -312,7 +324,7 @@ export const updateAutomationSettings = async (settings) => {
     const response = await api.put('/automation/settings', settings);
     return response.data;
   } catch (error) {
-    console.error('Error updating automation settings:', error);
+    if (DEBUG_API) console.error('Error updating automation settings:', error);
     throw error;
   }
 };

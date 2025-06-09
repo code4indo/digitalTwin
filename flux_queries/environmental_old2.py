@@ -1,22 +1,6 @@
 """
 Environmental Flux Queries
-B                   |> reduce(
-              identity: {"avg": 0.0, "min": 999.0, "max": 0.0, "count": 0.0},
-              fn: (r, accumulator) => ({
-                  avg: accumulator.avg + r.avg,
-                  min: math.min(x: r.min, y: accumulator.min),
-                  max: math.max(x: r.max, y: accumulator.max),
-                  count: accumulator.count + r.sample_count
-              })duce(
-              identity: {"avg": 0.0, "min": 999.0, "max": 0.0, "count": 0.0},
-              fn: (r, accumulator) => ({
-                  avg: accumulator.avg + r.avg,
-                  min: math.min(x: r.min, y: accumulator.min),
-                  max: math.max(x: r.max, y: accumulator.max),
-                  count: accumulator.count + r.sample_count
-              }) |> reduce(
-              identity: {"avg": 0.0, "min": 1000.0, "max": 0.0, "count": 0.0},       |> reduce(
-              identity: {"avg": 0.0, "min": 1000.0, "max": 0.0, "count": 0.0},isi kueri untuk statistik lingkungan (suhu dan kelembaban) dari perangkat sensor
+Be              identity: {"avg": 0.0, "min": 1000.0, "max": -1000.0, "count": 0.0},             identity: {"avg": 0.0, "min": 1000.0, "max": -1000.0, "count": 0.0},isi kueri untuk statistik lingkungan (suhu dan kelembaban) dari perangkat sensor
 """
 
 
@@ -47,7 +31,7 @@ def get_environmental_stats_query(bucket, range_filter_str, location_filter=""):
               sample_count: 1.0
           }}))
           |> reduce(
-              identity: {{"avg": 0.0, "min": 1000.0, "max": -1000.0, "count": 0.0}},
+              identity: {{"avg": 0.0, "min": +1000.0, "max": -1000.0, "count": 0.0}},
               fn: (r, accumulator) => ({{
                   avg: accumulator.avg + r.avg,
                   min: if r.min < accumulator.min then r.min else accumulator.min,
@@ -77,7 +61,7 @@ def get_environmental_stats_query(bucket, range_filter_str, location_filter=""):
               sample_count: 1.0
           }}))
           |> reduce(
-              identity: {{"avg": 0.0, "min": 1000.0, "max": -1000.0, "count": 0.0}},
+              identity: {{"avg": 0.0, "min": +1000.0, "max": -1000.0, "count": 0.0}},
               fn: (r, accumulator) => ({{
                   avg: accumulator.avg + r.avg,
                   min: if r.min < accumulator.min then r.min else accumulator.min,

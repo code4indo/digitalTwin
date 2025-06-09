@@ -7,8 +7,8 @@ const Header = () => {
   return (
     <header>
       <div className="logo">
-        <img src="/img/digital-twin-logo.svg" alt="Logo Digital Twin" />
-        <h1>Digital Twin Gedung Arsip</h1>
+        <img src="/img/logo_dt.png" alt="Logo Digital Twin2" />
+        <h1>Digital Twin Manajemen Iklim Mikro Gedung Arsip</h1>
       </div>
       <div className="header-right">
         <div className="current-time" id="current-time">{currentTime}</div>
