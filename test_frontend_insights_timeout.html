@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Insights Timeout Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .loading { color: orange; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Insights API Timeout Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Configuration</h2>
+        <div id="config-info" class="info">
+            <p><strong>API Base URL:</strong> <span id="api-url">Detecting...</span></p>
+            <p><strong>Test Timeout:</strong> 30 seconds (same as React app)</p>
+            <p><strong>API Key:</strong> development_key_for_testing</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Insights API Tests</h2>
+        <button id="test-climate-insights" onclick="testClimateInsights()">Test Climate Insights</button>
+        <button id="test-recommendations" onclick="testRecommendations()">Test Recommendations</button>
+        <button id="test-preservation-risk" onclick="testPreservationRisk()">Test Preservation Risk</button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Detect API base URL similar to React app logic
+        const currentHost = window.location.hostname;
+        let API_BASE_URL;
+        
+        if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+            API_BASE_URL = 'http://localhost:8002';
+        } else {
+            API_BASE_URL = `http://${currentHost}:8002`;
+        }
+        
+        document.getElementById('api-url').textContent = API_BASE_URL;
+        
+        const API_KEY = 'development_key_for_testing';
+        
+        function logResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            resultsDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+        
+        async function makeInsightsRequest(endpoint, testName) {
+            const startTime = Date.now();
+            logResult(`Starting ${testName}...`, 'loading');
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                const response = await fetch(`${API_BASE_URL}/insights/${endpoint}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                if (response.ok) {
+                    const data = await response.text(); // Get as text first to check size
+                    logResult(`✅ ${testName} successful! Duration: ${duration}ms (${(duration/1000).toFixed(1)}s)`, 'success');
+                    
+                    if (data.length > 500) {
+                        logResult(`Response size: ${data.length} characters (truncated for display)`, 'info');
+                        logResult(`<pre>${data.substring(0, 500)}...</pre>`, 'info');
+                    } else {
+                        logResult(`<pre>${data}</pre>`, 'info');
+                    }
+                } else {
+                    logResult(`❌ ${testName} failed! Status: ${response.status} ${response.statusText} (Duration: ${duration}ms)`, 'error');
+                    const errorText = await response.text();
+                    if (errorText) {
+                        logResult(`<pre>${errorText}</pre>`, 'error');
+                    }
+                }
+            } catch (error) {
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                if (error.name === 'AbortError') {
+                    logResult(`⏰ ${testName} timed out after 30 seconds!`, 'error');
+                } else {
+                    logResult(`❌ ${testName} error after ${duration}ms: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function testClimateInsights() {
+            clearResults();
+            await makeInsightsRequest('climate-analysis', 'Climate Insights');
+        }
+        
+        async function testRecommendations() {
+            clearResults();
+            await makeInsightsRequest('recommendations', 'Recommendations');
+        }
+        
+        async function testPreservationRisk() {
+            clearResults();
+            await makeInsightsRequest('preservation-risk', 'Preservation Risk');
+        }
+        
+        // Auto-run a test when page loads
+        window.onload = function() {
+            logResult('Page loaded. Ready to test insights API endpoints.', 'info');
+            logResult('Click the buttons above to test each endpoint with 30-second timeout.', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -26,35 +26,85 @@ const EnhancedBuildingModel = () => {
   // Fetch real environmental data from API
   const fetchRealEnvironmentalData = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8002/stats/environmental/', {
-        headers: {
-          'X-API-Key': 'development_key_for_testing',
-          'Content-Type': 'application/json'
+      // Fetch data for all rooms individually to get real per-room data
+      const rooms = ['F2', 'F3', 'F4', 'F5', 'F6', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8'];
+      const roomDataPromises = rooms.map(async (roomId) => {
+        try {
+          const response = await fetch(`http://localhost:8002/enhanced/rooms/${roomId}/environmental`, {
+            headers: {
+              'X-API-Key': 'development_key_for_testing',
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            return { roomId, data: data.currentConditions };
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch data for room ${roomId}:`, error);
+        }
+        return null;
+      });
+      
+      const results = await Promise.all(roomDataPromises);
+      const roomSpecificData = {};
+      
+      results.forEach(result => {
+        if (result) {
+          roomSpecificData[result.roomId] = result.data;
         }
       });
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      console.log('Real per-room environmental data fetched:', roomSpecificData);
+      setRealEnvironmentalData(roomSpecificData);
       
-      const data = await response.json();
-      setRealEnvironmentalData(data);
-      console.log('Real environmental data fetched:', data);
-      return data;
+      return roomSpecificData;
     } catch (error) {
       console.error('Failed to fetch real environmental data:', error);
-      // Return fallback data if API fails
+      // Return fallback data structure
       return {
-        temperature: { avg: 22.0, min: 19.0, max: 25.0 },
-        humidity: { avg: 50.0, min: 40.0, max: 60.0 },
-        timestamp: new Date().toISOString()
+        fallback: true,
+        message: 'Using fallback data - API not available'
       };
     }
   }, []);
 
   // Generate room data using real environmental data as base
   const generateRoomData = useCallback((roomId) => {
-    // Use real environmental data as base, with room-specific variations
+    // If we have real per-room data, use it directly
+    if (realEnvironmentalData && realEnvironmentalData[roomId] && !realEnvironmentalData.fallback) {
+      const roomRealData = realEnvironmentalData[roomId];
+      
+      return {
+        id: roomId,
+        currentConditions: {
+          temperature: roomRealData.temperature,
+          humidity: roomRealData.humidity,
+          co2: roomRealData.co2 || 400,
+          light: roomRealData.light || 300
+        },
+        devices: [
+          {
+            id: `ac-${roomId.toLowerCase()}`,
+            name: 'AC',
+            status: Math.random() > 0.2 ? 'active' : 'inactive',
+            setPoint: Math.floor(Math.random() * 4) + 19
+          },
+          {
+            id: `dh-${roomId.toLowerCase()}`,
+            name: 'Dehumidifier',
+            status: Math.random() > 0.3 ? 'active' : 'inactive',
+            setPoint: Math.floor(Math.random() * 10) + 45
+          }
+        ],
+        sensorStatus: 'active',
+        lastUpdate: roomRealData.sensor_reading_time || new Date().toISOString(),
+        dataSource: roomRealData.data_source || 'real_sensor'
+      };
+    }
+    
+    // Fallback to old method if real data not available
     const baseTemp = realEnvironmentalData?.temperature?.avg || 22.0;
     const baseHumidity = realEnvironmentalData?.humidity?.avg || 50.0;
     
@@ -101,7 +151,8 @@ const EnhancedBuildingModel = () => {
         }
       ],
       sensorStatus: Math.random() > 0.1 ? 'active' : 'offline',
-      lastUpdate: realEnvironmentalData?.timestamp || new Date().toISOString()
+      lastUpdate: new Date().toISOString(),
+      dataSource: 'fallback'
     };
   }, [realEnvironmentalData]);
 

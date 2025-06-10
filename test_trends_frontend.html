@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Trends API</title>
+</head>
+<body>
+    <h1>Test Trends API</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testTrendsAPI() {
+            try {
+                const response = await fetch('/api/data/trends?period=day&parameter=temperature&location=all', {
+                    headers: {
+                        'X-API-Key': 'development_key_for_testing'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    <h2>API Response:</h2>
+                    <p><strong>Status:</strong> Success</p>
+                    <p><strong>Period:</strong> ${data.period}</p>
+                    <p><strong>Parameter:</strong> ${data.parameter}</p>
+                    <p><strong>Data Points:</strong> ${data.data_points}</p>
+                    <p><strong>First timestamp:</strong> ${data.timestamps[0]}</p>
+                    <p><strong>First value:</strong> ${data.values[0]}</p>
+                    <p><strong>Last timestamp:</strong> ${data.timestamps[data.timestamps.length-1]}</p>
+                    <p><strong>Last value:</strong> ${data.values[data.values.length-1]}</p>
+                    <h3>Analysis:</h3>
+                    <pre>${JSON.stringify(data.analysis, null, 2)}</pre>
+                `;
+                
+                console.log('Trends API working successfully:', data);
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h2>API Error:</h2>
+                    <p style="color: red;">${error.message}</p>
+                `;
+                console.error('Error testing trends API:', error);
+            }
+        }
+        
+        // Test API ketika halaman dimuat
+        testTrendsAPI();
+    </script>
+</body>
+</html>

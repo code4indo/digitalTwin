@@ -494,6 +494,76 @@ async def get_temperature_stats_last_hour(
         logger.error(f"Error tak terduga saat mengambil statistik suhu: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Terjadi kesalahan internal server saat mengambil statistik suhu.")
 
+@app.get("/data/trends", summary="Dapatkan data tren untuk analisis temporal", response_model=Dict[str, Any])
+async def get_trends(
+    period: str = Query("day", description="Periode analisis: 'day' (24 jam), 'week' (7 hari), atau 'month' (30 hari)"),
+    parameter: str = Query("temperature", description="Parameter sensor: 'temperature' atau 'humidity'"),
+    location: str = Query("all", description="Lokasi spesifik atau 'all' untuk semua lokasi"),
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Mengambil data tren temporal untuk parameter sensor tertentu.
+    Mendukung analisis per jam (24 jam), harian (7 hari), atau bulanan (30 hari).
+    Memerlukan autentikasi API Key.
+    """
+    # Import trend service
+    from services.trend_service import (
+        get_hourly_trend_data,
+        get_daily_trend_data, 
+        get_monthly_trend_data
+    )
+    
+    try:
+        # Validasi parameter
+        if parameter not in ["temperature", "humidity"]:
+            raise HTTPException(status_code=400, detail="Parameter harus 'temperature' atau 'humidity'")
+        
+        if period not in ["day", "week", "month"]:
+            raise HTTPException(status_code=400, detail="Period harus 'day', 'week', atau 'month'")
+        
+        # Panggil service yang sesuai berdasarkan periode
+        if period == "day":
+            # Data per jam untuk 24 jam terakhir
+            trend_data = await get_hourly_trend_data(
+                parameter=parameter,
+                location=location if location != "all" else None,
+                hours=24
+            )
+        elif period == "week":
+            # Data harian untuk 7 hari terakhir
+            trend_data = await get_daily_trend_data(
+                parameter=parameter,
+                location=location if location != "all" else None,
+                days=7
+            )
+        elif period == "month":
+            # Data harian untuk 30 hari terakhir
+            trend_data = await get_monthly_trend_data(
+                parameter=parameter,
+                location=location if location != "all" else None,
+                days=30
+            )
+        
+        # Format response sesuai dengan yang diharapkan frontend
+        return {
+            "timestamps": trend_data.get("timestamps", []),
+            "values": trend_data.get("values", []),
+            "period": period,
+            "parameter": parameter,
+            "location": location,
+            "analysis": trend_data.get("analysis", {}),
+            "data_points": trend_data.get("data_points", 0),
+            "last_updated": trend_data.get("last_updated", datetime.now().isoformat())
+        }
+        
+    except HTTPException:
+        # HTTPException dari service layer, teruskan ke client
+        raise
+    except Exception as e:
+        # Error tak terduga
+        logger.error(f"Error tak terduga saat mengambil data tren: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Terjadi kesalahan internal server saat mengambil data tren.")
+
 # Untuk menjalankan aplikasi ini (misalnya dengan uvicorn):
 # uvicorn api:app --host 0.0.0.0 --port 8002 --reload
 # Jangan lupa set variabel lingkungan VALID_API_KEYS, contoh:

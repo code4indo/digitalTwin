@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test React API Calls</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Test API Calls dari React Dashboard</h1>
+    
+    <div id="results">
+        <h2>Test Results:</h2>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = `http://${window.location.hostname}:8002`;
+        const API_KEY = 'development_key_for_testing';
+        
+        // Create axios instance with same config as React app
+        const api = axios.create({
+            baseURL: API_BASE_URL,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': API_KEY
+            },
+            timeout: 10000 // Default timeout seperti React app
+        });
+
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            output.appendChild(div);
+        }
+
+        async function testAPI() {
+            log('Starting API tests...');
+            
+            // Test 1: Basic trends endpoint
+            try {
+                log('Testing /data/trends...');
+                const startTime = Date.now();
+                const trendsResponse = await api.get('/data/trends');
+                const trendsTime = Date.now() - startTime;
+                log(`✅ /data/trends responded in ${trendsTime}ms`);
+            } catch (error) {
+                log(`❌ /data/trends failed: ${error.message}`);
+            }
+
+            // Test 2: Insights with default timeout
+            try {
+                log('Testing /insights/climate-analysis with 10s timeout...');
+                const startTime = Date.now();
+                const insightsResponse = await api.get('/insights/climate-analysis');
+                const insightsTime = Date.now() - startTime;
+                log(`✅ /insights/climate-analysis responded in ${insightsTime}ms`);
+            } catch (error) {
+                log(`❌ /insights/climate-analysis failed: ${error.message}`);
+            }
+
+            // Test 3: Insights with extended timeout
+            try {
+                log('Testing /insights/climate-analysis with 30s timeout...');
+                const startTime = Date.now();
+                const insightsResponse = await api.get('/insights/climate-analysis', {
+                    timeout: 30000
+                });
+                const insightsTime = Date.now() - startTime;
+                log(`✅ /insights/climate-analysis (30s timeout) responded in ${insightsTime}ms`);
+            } catch (error) {
+                log(`❌ /insights/climate-analysis (30s timeout) failed: ${error.message}`);
+            }
+
+            // Test 4: Stats endpoint
+            try {
+                log('Testing /stats/summary...');
+                const startTime = Date.now();
+                const statsResponse = await api.get('/stats/summary');
+                const statsTime = Date.now() - startTime;
+                log(`✅ /stats/summary responded in ${statsTime}ms`);
+            } catch (error) {
+                log(`❌ /stats/summary failed: ${error.message}`);
+            }
+        }
+
+        // Run tests when page loads
+        testAPI();
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Iklim Mikro - Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-card { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .loading { color: #6c757d; }
+        .data-display { background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .weather-status { font-weight: bold; padding: 5px 10px; border-radius: 4px; }
+        .system-status { font-weight: bold; padding: 5px 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🌡️ Test Status Iklim Mikro - Direct API Calls</h1>
+    
+    <div class="test-card">
+        <h2>Control Panel</h2>
+        <button onclick="loadAllData()">🔄 Refresh All Data</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+        <div id="last-update" style="margin-top: 10px; font-size: 0.9em; color: #666;"></div>
+    </div>
+
+    <div class="status-grid">
+        <div class="test-card">
+            <h3>🌡️ Suhu Rata-rata</h3>
+            <div id="temperature-status" class="loading">Loading...</div>
+            <div id="temperature-data" class="data-display"></div>
+        </div>
+
+        <div class="test-card">
+            <h3>💧 Kelembapan Rata-rata</h3>
+            <div id="humidity-status" class="loading">Loading...</div>
+            <div id="humidity-data" class="data-display"></div>
+        </div>
+
+        <div class="test-card">
+            <h3>🌤️ Cuaca Eksternal (BMKG)</h3>
+            <div id="weather-status" class="loading">Loading...</div>
+            <div id="weather-data" class="data-display"></div>
+        </div>
+
+        <div class="test-card">
+            <h3>🔧 Status Kesehatan Sistem</h3>
+            <div id="system-status" class="loading">Loading...</div>
+            <div id="system-data" class="data-display"></div>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h3>📊 Detailed Logs</h3>
+        <div id="logs" style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 0.9em; max-height: 400px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'development_key_for_testing';
+        
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'loading';
+            logsDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+        
+        function updateLastUpdate() {
+            document.getElementById('last-update').textContent = `Last updated: ${new Date().toLocaleString()}`;
+        }
+        
+        function clearResults() {
+            document.getElementById('logs').innerHTML = '';
+            ['temperature', 'humidity', 'weather', 'system'].forEach(type => {
+                document.getElementById(`${type}-status`).textContent = 'Cleared';
+                document.getElementById(`${type}-status`).className = 'loading';
+                document.getElementById(`${type}-data`).innerHTML = '';
+            });
+        }
+        
+        async function fetchTemperatureData() {
+            try {
+                log('Fetching temperature data...');
+                const response = await fetch('/api/stats/temperature/last-hour/stats/', {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('temperature-status').textContent = `${data.avg_temperature}°C`;
+                    document.getElementById('temperature-status').className = 'success';
+                    document.getElementById('temperature-data').innerHTML = `
+                        <strong>Min:</strong> ${data.min_temperature}°C<br>
+                        <strong>Max:</strong> ${data.max_temperature}°C
+                    `;
+                    log('✅ Temperature data loaded successfully', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                document.getElementById('temperature-status').textContent = 'Error';
+                document.getElementById('temperature-status').className = 'error';
+                document.getElementById('temperature-data').innerHTML = error.message;
+                log(`❌ Temperature data failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchHumidityData() {
+            try {
+                log('Fetching humidity data...');
+                const response = await fetch('/api/stats/humidity/last-hour/stats/', {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('humidity-status').textContent = `${data.avg_humidity}%`;
+                    document.getElementById('humidity-status').className = 'success';
+                    document.getElementById('humidity-data').innerHTML = `
+                        <strong>Min:</strong> ${data.min_humidity}%<br>
+                        <strong>Max:</strong> ${data.max_humidity}%
+                    `;
+                    log('✅ Humidity data loaded successfully', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                document.getElementById('humidity-status').textContent = 'Error';
+                document.getElementById('humidity-status').className = 'error';
+                document.getElementById('humidity-data').innerHTML = error.message;
+                log(`❌ Humidity data failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchWeatherData() {
+            try {
+                log('Fetching BMKG weather data...');
+                const response = await fetch('/api/external/bmkg/latest', {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const weather = data.weather_data;
+                    document.getElementById('weather-status').textContent = weather.weather_condition || 'Tidak Tersedia';
+                    document.getElementById('weather-status').className = weather.weather_condition === 'Tidak Tersedia' ? 'error' : 'success';
+                    document.getElementById('weather-data').innerHTML = `
+                        <strong>Suhu Luar:</strong> ${weather.temperature}°C<br>
+                        <strong>Kelembapan Luar:</strong> ${weather.humidity}%<br>
+                        <strong>Angin:</strong> ${weather.wind_speed} m/s ${weather.wind_direction}<br>
+                        <strong>Data Source:</strong> ${data.data_source}
+                    `;
+                    log(`✅ Weather data loaded: ${weather.weather_condition}`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                document.getElementById('weather-status').textContent = 'Tidak Tersedia';
+                document.getElementById('weather-status').className = 'error';
+                document.getElementById('weather-data').innerHTML = error.message;
+                log(`❌ Weather data failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchSystemHealthData() {
+            try {
+                log('Fetching system health data...');
+                const response = await fetch('/api/system/health/', {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('system-status').textContent = data.status || 'Unknown';
+                    document.getElementById('system-status').className = data.status === 'Unknown' ? 'error' : 'success';
+                    document.getElementById('system-data').innerHTML = `
+                        <strong>Perangkat Aktif:</strong> ${data.active_devices}/${data.total_devices}<br>
+                        <strong>InfluxDB:</strong> ${data.influxdb_connection === 'connected' ? 'Terhubung ✓' : 'Terputus ✗'}
+                    `;
+                    log(`✅ System health loaded: ${data.status}`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                document.getElementById('system-status').textContent = 'Unknown';
+                document.getElementById('system-status').className = 'error';
+                document.getElementById('system-data').innerHTML = error.message;
+                log(`❌ System health failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadAllData() {
+            log('🔄 Starting data refresh...');
+            updateLastUpdate();
+            
+            // Load all data concurrently
+            await Promise.all([
+                fetchTemperatureData(),
+                fetchHumidityData(),
+                fetchWeatherData(),
+                fetchSystemHealthData()
+            ]);
+            
+            log('🎉 Data refresh completed!', 'success');
+        }
+        
+        // Auto-load data when page loads
+        window.addEventListener('load', () => {
+            log('Page loaded, starting initial data fetch...');
+            loadAllData();
+        });
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadAllData, 30000);
+    </script>
+</body>
+</html>

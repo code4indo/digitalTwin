@@ -414,7 +414,11 @@ export const fetchPredictiveAnalysis = async (params = {}) => {
 export const fetchClimateInsights = async (params = {}) => {
   try {
     if (DEBUG_API) console.log('Fetching climate insights with params:', params);
-    const response = await api.get('/insights/climate-analysis', { params });
+    // Insights API membutuhkan timeout lebih lama karena memproses data dengan AI
+    const response = await api.get('/insights/climate-analysis', { 
+      params,
+      timeout: 30000 // 30 detik untuk AI processing
+    });
     if (DEBUG_API) console.log('Climate insights response:', response.data);
     return response.data;
   } catch (error) {
@@ -426,7 +430,10 @@ export const fetchClimateInsights = async (params = {}) => {
 export const fetchPreservationRisk = async (params = {}) => {
   try {
     if (DEBUG_API) console.log('Fetching preservation risk with params:', params);
-    const response = await api.get('/insights/preservation-risk', { params });
+    const response = await api.get('/insights/preservation-risk', { 
+      params,
+      timeout: 30000 // 30 detik untuk AI processing
+    });
     if (DEBUG_API) console.log('Preservation risk response:', response.data);
     return response.data;
   } catch (error) {
@@ -438,7 +445,10 @@ export const fetchPreservationRisk = async (params = {}) => {
 export const fetchRecommendations = async (params = {}) => {
   try {
     if (DEBUG_API) console.log('Fetching recommendations with params:', params);
-    const response = await api.get('/insights/recommendations', { params });
+    const response = await api.get('/insights/recommendations', { 
+      params,
+      timeout: 30000 // 30 detik untuk AI processing
+    });
     if (DEBUG_API) console.log('Recommendations response:', response.data);
     return response.data;
   } catch (error) {
