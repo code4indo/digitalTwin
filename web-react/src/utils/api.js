@@ -79,6 +79,84 @@ api.interceptors.response.use(
   }
 );
 
+// Enhanced API functions for room-specific data
+export const fetchRoomEnvironmentalData = async (roomId) => {
+  try {
+    if (DEBUG_API) console.log(`Fetching enhanced data for room ${roomId}...`);
+    const response = await api.get(`/enhanced/rooms/${roomId}/environmental`);
+    if (DEBUG_API) console.log(`Room ${roomId} data:`, response.data);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error(`Error fetching data for room ${roomId}:`, error);
+    // Return fallback data structure
+    return {
+      id: roomId,
+      currentConditions: {
+        temperature: 22.0 + (Math.random() - 0.5) * 4,
+        humidity: 50.0 + (Math.random() - 0.5) * 10,
+        co2: 450,
+        light: 350
+      },
+      devices: [
+        {
+          id: `ac-${roomId.toLowerCase()}`,
+          name: 'AC',
+          status: Math.random() > 0.2 ? 'active' : 'inactive',
+          setPoint: 21
+        },
+        {
+          id: `dh-${roomId.toLowerCase()}`,
+          name: 'Dehumidifier',
+          status: Math.random() > 0.3 ? 'active' : 'inactive',
+          setPoint: 50
+        }
+      ],
+      sensorStatus: Math.random() > 0.1 ? 'active' : 'offline',
+      healthScore: {
+        overallScore: 75 + Math.random() * 20,
+        status: 'good'
+      },
+      lastUpdate: new Date().toISOString()
+    };
+  }
+};
+
+export const fetchAllRoomsOverview = async () => {
+  try {
+    if (DEBUG_API) console.log('Fetching all rooms overview...');
+    const response = await api.get('/enhanced/rooms/overview');
+    if (DEBUG_API) console.log('All rooms overview:', response.data);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching rooms overview:', error);
+    throw error;
+  }
+};
+
+export const fetchBuildingOverview = async () => {
+  try {
+    if (DEBUG_API) console.log('Fetching building overview...');
+    const response = await api.get('/enhanced/system/building-overview');
+    if (DEBUG_API) console.log('Building overview:', response.data);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching building overview:', error);
+    throw error;
+  }
+};
+
+export const fetchPredictiveData = async (roomId, hoursAhead = 1) => {
+  try {
+    if (DEBUG_API) console.log(`Fetching predictions for room ${roomId}, ${hoursAhead}h ahead...`);
+    const response = await api.get(`/enhanced/predictions/${roomId}?hours=${hoursAhead}`);
+    if (DEBUG_API) console.log(`Predictions for ${roomId}:`, response.data);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error(`Error fetching predictions for room ${roomId}:`, error);
+    throw error;
+  }
+};
+
 // Fungsi-fungsi untuk mengambil data dari API
 export const fetchSensorData = async (params = {}) => {
   try {
@@ -277,8 +355,44 @@ export const fetchPredictions = async (params = {}) => {
 // Function untuk mengambil detail ruangan berdasarkan ID
 export const fetchRoomDetails = async (roomId) => {
   try {
+    if (DEBUG_API) console.log(`Fetching room details for: ${roomId}`);
     const response = await api.get(`/rooms/${roomId}`);
-    return response.data;
+    
+    // Validate the response structure
+    const data = response.data;
+    if (DEBUG_API) console.log('Room details API response:', data);
+    
+    // Ensure required properties exist
+    if (!data || !data.currentConditions) {
+      console.warn('Room data missing currentConditions property, adding fallback');
+      data.currentConditions = {
+        temperature: 22.0,
+        humidity: 50.0,
+        co2: 400,
+        light: 350,
+        air_quality: 85
+      };
+    }
+    
+    // Ensure other required properties exist
+    if (!data.statistics) {
+      data.statistics = {
+        dailyAvg: {
+          temperature: data.currentConditions.temperature,
+          humidity: data.currentConditions.humidity
+        },
+        timeInOptimalRange: {
+          temperature: 80,
+          humidity: 75
+        }
+      };
+    }
+    
+    if (!data.devices) {
+      data.devices = [];
+    }
+    
+    return data;
   } catch (error) {
     if (DEBUG_API) console.error(`Error fetching room details for ${roomId}:`, error);
     throw error;
@@ -296,13 +410,50 @@ export const fetchPredictiveAnalysis = async (params = {}) => {
   }
 };
 
+// AI Insights API Functions
+export const fetchClimateInsights = async (params = {}) => {
+  try {
+    if (DEBUG_API) console.log('Fetching climate insights with params:', params);
+    const response = await api.get('/insights/climate-analysis', { params });
+    if (DEBUG_API) console.log('Climate insights response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching climate insights:', error);
+    throw error;
+  }
+};
+
+export const fetchPreservationRisk = async (params = {}) => {
+  try {
+    if (DEBUG_API) console.log('Fetching preservation risk with params:', params);
+    const response = await api.get('/insights/preservation-risk', { params });
+    if (DEBUG_API) console.log('Preservation risk response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching preservation risk:', error);
+    throw error;
+  }
+};
+
+export const fetchRecommendations = async (params = {}) => {
+  try {
+    if (DEBUG_API) console.log('Fetching recommendations with params:', params);
+    const response = await api.get('/insights/recommendations', { params });
+    if (DEBUG_API) console.log('Recommendations response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (DEBUG_API) console.error('Error fetching recommendations:', error);
+    throw error;
+  }
+};
+
 // Function untuk mengambil rekomendasi proaktif
-export const fetchRecommendations = async () => {
+export const fetchProactiveRecommendations = async () => {
   try {
     const response = await api.get('/recommendations/proactive');
     return response.data;
   } catch (error) {
-    if (DEBUG_API) console.error('Error fetching recommendations:', error);
+    if (DEBUG_API) console.error('Error fetching proactive recommendations:', error);
     throw error;
   }
 };

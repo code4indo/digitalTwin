@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Query, Depends, HTTPException
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
-from api import get_api_key
+from utils.auth import get_api_key
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 

@@ -5,12 +5,12 @@ const AutomationControls = () => {
   const [automationEnabled, setAutomationEnabled] = useState(true);
   const [settings, setSettings] = useState({
     temperature: {
-      min: 19,
-      max: 24,
+      min: 22,  // Selaras dengan backend: target_temperature - tolerance (24-2)
+      max: 26,  // Selaras dengan backend: target_temperature + tolerance (24+2)
     },
     humidity: {
-      min: 45,
-      max: 55,
+      min: 50,  // Selaras dengan backend: target_humidity - tolerance (60-10)
+      max: 70,  // Selaras dengan backend: target_humidity + tolerance (60+10)
     },
     responseSensitivity: 'medium', // low, medium, high
   });
@@ -208,15 +208,15 @@ const AutomationControls = () => {
                     <span className="range-min">{settings.temperature.min}°C</span>
                     <input 
                       type="range" 
-                      min="18" 
-                      max="22" 
+                      min="20" 
+                      max="24" 
                       value={settings.temperature.min}
                       onChange={(e) => handleTemperatureChange(e.target.value, 'min')}
                     />
                     <span className="range-max">{settings.temperature.max}°C</span>
                     <input 
                       type="range" 
-                      min="22" 
+                      min="24" 
                       max="28" 
                       value={settings.temperature.max}
                       onChange={(e) => handleTemperatureChange(e.target.value, 'max')}
@@ -232,16 +232,16 @@ const AutomationControls = () => {
                     <span className="range-min">{settings.humidity.min}%</span>
                     <input 
                       type="range" 
-                      min="40" 
-                      max="50" 
+                      min="45" 
+                      max="60" 
                       value={settings.humidity.min}
                       onChange={(e) => handleHumidityChange(e.target.value, 'min')}
                     />
                     <span className="range-max">{settings.humidity.max}%</span>
                     <input 
                       type="range" 
-                      min="50" 
-                      max="60" 
+                      min="60" 
+                      max="75" 
                       value={settings.humidity.max}
                       onChange={(e) => handleHumidityChange(e.target.value, 'max')}
                     />
@@ -274,6 +274,8 @@ const AutomationControls = () => {
             </div>
           </div>
           
+          {/* Kontrol Perangkat disembunyikan sesuai permintaan */}
+          {/* 
           <div className="automation-card device-control">
             <h3>Kontrol Perangkat</h3>
             <div className="device-grid">
@@ -324,6 +326,7 @@ const AutomationControls = () => {
               ))}
             </div>
           </div>
+          */}
         </div>
       )}
     </section>

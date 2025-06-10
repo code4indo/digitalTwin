@@ -481,7 +481,9 @@ const EnvironmentalStatus = () => {
               {environmentData?.system?.healthUpdated && <small style={{fontSize: '0.7em', marginLeft: '5px'}}> ✓</small>}
             </div>
             {environmentData?.system?.health !== 'Memuat...' && <StatusExplainer status={environmentData?.system?.health} />}
-            <div className="health-details">
+            
+            {/* Bagian Perangkat Aktif disembunyikan sesuai permintaan */}
+            <div className="health-details" style={{display: 'none'}}>
               Perangkat Aktif: <span id="active-devices" className={environmentData?.system?.activeDevicesUpdated ? 'updated-data' : ''}>
                 {environmentData?.system?.activeDevices || '...'}
                 {environmentData?.system?.activeDevicesUpdated && <small style={{fontSize: '0.7em', marginLeft: '2px'}}> ✓</small>}
@@ -507,21 +509,21 @@ const EnvironmentalStatus = () => {
                   </div>
                 </div>
               )}
-              
-              {/* InfluxDB Connection Status */}
-              {environmentData?.system?.influxdbConnection && (
-                <div style={{marginTop: '8px', fontSize: '0.85em'}}>
-                  InfluxDB: 
-                  <span style={{
-                    color: environmentData?.system?.influxdbConnection === 'connected' ? '#28a745' : '#dc3545',
-                    fontWeight: 'bold',
-                    marginLeft: '5px'
-                  }}>
-                    {environmentData?.system?.influxdbConnection === 'connected' ? 'Terhubung ✓' : 'Terputus ✗'}
-                  </span>
-                </div>
-              )}
             </div>
+              
+            {/* InfluxDB Connection Status */}
+            {environmentData?.system?.influxdbConnection && (
+              <div style={{marginTop: '8px', fontSize: '0.85em'}}>
+                InfluxDB: 
+                <span style={{
+                  color: environmentData?.system?.influxdbConnection === 'connected' ? '#28a745' : '#dc3545',
+                  fontWeight: 'bold',
+                  marginLeft: '5px'
+                }}>
+                  {environmentData?.system?.influxdbConnection === 'connected' ? 'Terhubung ✓' : 'Terputus ✗'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

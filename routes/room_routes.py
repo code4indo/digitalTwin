@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 from services.room_service import get_room_details, get_room_list
 
 # Import get_api_key dari api.py
-from api import get_api_key
+from utils.auth import get_api_key
 
 router = APIRouter(prefix="/rooms", tags=["rooms"])
 

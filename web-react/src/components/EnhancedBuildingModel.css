@@ -1,0 +1,436 @@
+/* Enhanced Building Model Styles */
+.enhanced-building-view {
+  grid-column: span 12;
+  position: relative;
+  min-height: 700px;
+}
+
+.enhanced-building-view h2 {
+  margin-bottom: var(--space-lg);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.enhanced-building-view h2::before {
+  content: '🏢';
+  font-size: 1.5em;
+}
+
+/* Model Controls */
+.model-controls {
+  position: absolute;
+  top: 60px;
+  left: var(--space-md);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: rgba(255, 255, 255, 0.95);
+  padding: var(--space-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  min-width: 200px;
+}
+
+.model-controls button {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.model-controls button:hover {
+  background: var(--secondary-color);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.model-controls button.active {
+  background: var(--secondary-color);
+  color: white;
+  border-color: var(--secondary-color);
+  box-shadow: var(--shadow-md);
+}
+
+.prediction-controls {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid #eee;
+}
+
+.prediction-controls label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.prediction-controls input[type="range"] {
+  width: 100%;
+  margin: var(--space-xs) 0;
+}
+
+.system-status {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid #eee;
+}
+
+.health-indicator {
+  font-size: 0.8rem;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--border-radius-sm);
+  display: inline-block;
+}
+
+.health-indicator.optimal {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.health-indicator.good {
+  background: rgba(139, 195, 74, 0.1);
+  color: #8BC34A;
+}
+
+.health-indicator.warning {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+}
+
+.health-indicator.critical {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+/* Model Container */
+.model-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  margin: var(--space-lg) 0;
+}
+
+.building-model-3d {
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+/* Room Info Panel (Tooltip) */
+.room-info-panel {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: var(--space-md);
+  border-radius: var(--border-radius-md);
+  font-size: 0.85rem;
+  pointer-events: none;
+  z-index: 1000;
+  min-width: 220px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.room-info-panel h4 {
+  margin: 0 0 var(--space-sm) 0;
+  color: #4CAF50;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #333;
+  padding-bottom: var(--space-xs);
+}
+
+.room-info-panel .condition {
+  margin: var(--space-xs) 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.room-info-panel .status.optimal {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.room-info-panel .status.warning {
+  color: #FF9800;
+  font-weight: bold;
+}
+
+.room-info-panel .status.critical {
+  color: #F44336;
+  font-weight: bold;
+}
+
+.room-info-panel .sensor-status.active {
+  color: #4CAF50;
+}
+
+.room-info-panel .sensor-status.offline {
+  color: #F44336;
+}
+
+.room-info-panel .devices {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid #333;
+  font-size: 0.8rem;
+}
+
+.room-info-panel .devices strong {
+  display: block;
+  margin-bottom: var(--space-xs);
+  color: #ccc;
+}
+
+.device-status {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: var(--space-xs);
+}
+
+.device-status.active {
+  background: #4CAF50;
+  box-shadow: 0 0 4px #4CAF50;
+}
+
+.device-status.inactive {
+  background: #F44336;
+  box-shadow: 0 0 4px #F44336;
+}
+
+/* Legend */
+.legend {
+  position: absolute;
+  bottom: var(--space-md);
+  left: var(--space-md);
+  background: rgba(255, 255, 255, 0.95);
+  padding: var(--space-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: 0.85rem;
+  min-width: 250px;
+}
+
+.legend-title {
+  font-weight: 600;
+  color: var(--heading-color);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid #eee;
+  padding-bottom: var(--space-xs);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.color-box {
+  width: 20px;
+  height: 15px;
+  margin-right: var(--space-sm);
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.color-box.optimal {
+  background: #4CAF50;
+}
+
+.color-box.warning {
+  background: #FF9800;
+}
+
+.color-box.critical {
+  background: #F44336;
+}
+
+.color-box.unknown {
+  background: #9E9E9E;
+}
+
+/* Active Room Info */
+.active-room-info {
+  position: absolute;
+  top: 60px;
+  right: var(--space-md);
+  background: rgba(255, 255, 255, 0.95);
+  padding: var(--space-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  min-width: 200px;
+  z-index: 100;
+}
+
+.selected-room-details h3 {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  border-bottom: 2px solid var(--secondary-color);
+  padding-bottom: var(--space-xs);
+}
+
+.room-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.room-stats .stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) 0;
+}
+
+.room-stats .label {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.room-stats .value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.room-stats .value.status {
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+}
+
+.room-stats .value.status.optimal {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.room-stats .value.status.warning {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+}
+
+.room-stats .value.status.critical {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .enhanced-building-view {
+    grid-column: span 12;
+  }
+  
+  .model-controls,
+  .active-room-info {
+    position: static;
+    margin: var(--space-md) 0;
+    width: 100%;
+  }
+  
+  .legend {
+    position: static;
+    margin-top: var(--space-md);
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .model-container {
+    height: 400px;
+  }
+  
+  .model-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-width: auto;
+  }
+  
+  .room-info-panel {
+    min-width: 180px;
+    font-size: 0.8rem;
+  }
+  
+  .active-room-info {
+    min-width: auto;
+  }
+}
+
+/* Loading State */
+.model-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px;
+  background: var(--bg-color);
+  border-radius: var(--border-radius-md);
+}
+
+.model-loading::after {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--light-color);
+  border-top: 4px solid var(--secondary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Animation for smooth transitions */
+.room-info-panel {
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hover effects */
+.model-controls button:not(.active):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.legend-item:hover {
+  background: rgba(52, 152, 219, 0.05);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 4px;
+  margin: 2px 0;
+}
+
+/* Enhanced visual indicators */
+.model-controls button.active::after {
+  content: ' ✓';
+  color: white;
+}
+
+.health-indicator::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: var(--space-xs);
+  background: currentColor;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

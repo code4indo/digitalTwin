@@ -1,3 +1,6 @@
+/* Import component-specific styles */
+@import './components/EnhancedBuildingModel.css';
+
 /* Main Styles for Digital Twin Dashboard */
 :root {
     /* Primary Color Palette */
@@ -184,6 +187,10 @@ footer {
 
 .building-view {
     grid-column: span 5;
+}
+
+.climate-digital-twin {
+    grid-column: span 12;
 }
 
 .environmental-status {

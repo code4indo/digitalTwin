@@ -1,0 +1,483 @@
+/* Climate Insights Component Styles */
+
+.climate-insights {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.insights-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.insights-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(45deg, #FFF, #E3F2FD);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.insights-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+/* Controls Section */
+.insights-controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.parameter-selector,
+.period-selector,
+.location-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.insights-controls label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.insights-controls select {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.insights-controls select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.insights-controls select option {
+  background: #333;
+  color: white;
+}
+
+/* Tab Navigation */
+.insights-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.tab-button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tab-button.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Error Banner */
+.insights-error-banner {
+  background: rgba(255, 193, 7, 0.2);
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  color: #FFF3C4;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Loading State */
+.insights-loading {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.insights-loading p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Error State */
+.insights-error {
+  text-align: center;
+  padding: 40px 20px;
+  opacity: 0.7;
+}
+
+/* Tab Content */
+.insights-tab-content {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  min-height: 300px;
+}
+
+/* Insights Content */
+.insights-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.status-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.status-item {
+  text-align: center;
+}
+
+.status-item h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.status-badge,
+.risk-badge,
+.confidence-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.confidence-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.condition-summary,
+.preservation-impact,
+.trend-prediction,
+.long-term-impact {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid rgba(255, 255, 255, 0.3);
+}
+
+.condition-summary h4,
+.preservation-impact h4,
+.trend-prediction h4,
+.long-term-impact h4 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.condition-summary p,
+.preservation-impact p,
+.trend-prediction p,
+.long-term-impact p {
+  margin: 0;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.action-recommendations {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid #4CAF50;
+}
+
+.action-recommendations h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: #81C784;
+}
+
+.action-recommendations ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.action-recommendations li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.insights-metadata {
+  text-align: center;
+  opacity: 0.6;
+  font-size: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 15px;
+}
+
+/* Preservation Content */
+.preservation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.risk-assessment {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+}
+
+.risk-assessment h4 {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+}
+
+.risk-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.risk-level {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.risk-score-value {
+  font-size: 1.1rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.primary-concern,
+.parameter-analysis,
+.overall-recommendation {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.primary-concern h4,
+.parameter-analysis h4,
+.overall-recommendation h4 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.analysis-summary {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.parameter-risk {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.recommendation-details {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.recommendation-details > div {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* Recommendations Content */
+.recommendations-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.recommendations-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  text-align: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.summary-item h5 {
+  margin: 0 0 8px 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.summary-item span {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.impact-assessment {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid rgba(255, 255, 255, 0.3);
+}
+
+.impact-assessment h4 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+}
+
+.action-section {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid;
+}
+
+.action-section.immediate {
+  border-left-color: #F44336;
+}
+
+.action-section.short-term {
+  border-left-color: #FF9800;
+}
+
+.action-section.long-term {
+  border-left-color: #2196F3;
+}
+
+.action-section.monitoring {
+  border-left-color: #4CAF50;
+}
+
+.action-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.action-section li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .climate-insights {
+    margin: 10px 0;
+    padding: 15px;
+  }
+  
+  .insights-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .status-overview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .recommendations-summary {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .insights-tab-content {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .insights-tabs {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .tab-button {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .climate-insights {
+    padding: 12px;
+  }
+  
+  .insights-header h3 {
+    font-size: 1.2rem;
+  }
+}

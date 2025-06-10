@@ -43,18 +43,27 @@ INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET_PRIMARY", "sensor_data_primary")
 
 # Konfigurasi Autentikasi API Key
 API_KEY_NAME = "X-API-Key"
-api_key_header_auth = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
+
+# Buat dua versi header auth: satu yang memerlukan key dan satu yang tidak
+api_key_header_auth_required = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
+api_key_header_auth_optional = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
 VALID_API_KEYS_STR = os.getenv("VALID_API_KEYS", "") # Contoh: "key1,key2,secretkey"
 VALID_API_KEYS = set(VALID_API_KEYS_STR.split(',')) if VALID_API_KEYS_STR else set()
 
 if not VALID_API_KEYS and not os.getenv("SKIP_API_KEY_CHECK_FOR_DEV"): # Tambahkan SKIP_API_KEY_CHECK_FOR_DEV untuk memudahkan pengembangan lokal jika diperlukan
     logger.warning("VALID_API_KEYS tidak diset di environment. Autentikasi API Key mungkin tidak berfungsi sebagaimana mestinya.")
 
-async def get_api_key(api_key: str = Depends(api_key_header_auth)):
+async def get_api_key(api_key: Optional[str] = Depends(api_key_header_auth_optional)):
+    # Check if API key check should be skipped for development
+    if os.getenv("SKIP_API_KEY_CHECK_FOR_DEV"):
+        logger.info("API Key check dilewati untuk pengembangan")
+        return "dev_key"
+    
     if not VALID_API_KEYS: # Jika tidak ada kunci yang dikonfigurasi, tolak semua untuk keamanan default
         logger.warning("Tidak ada VALID_API_KEYS yang dikonfigurasi. Menolak permintaan.")
         raise HTTPException(status_code=401, detail="Layanan tidak dikonfigurasi dengan benar untuk autentikasi.")
-    if api_key not in VALID_API_KEYS:
+    if not api_key or api_key not in VALID_API_KEYS:
         logger.warning(f"API Key tidak valid: {api_key}")
         raise HTTPException(status_code=401, detail="API Key tidak valid atau hilang")
     return api_key
@@ -98,9 +107,18 @@ app.include_router(analysis_router)
 from routes.external_routes import router as external_router
 app.include_router(external_router)
 
+# Tambahkan enhanced API router untuk digital twin visualization
+from enhanced_api import get_enhanced_router
+enhanced_router = get_enhanced_router()
+app.include_router(enhanced_router)
+
 # Tambahkan router untuk machine learning
 from routes.ml_routes import router as ml_router
 app.include_router(ml_router)
+
+# Tambahkan router untuk AI insights
+from routes.insights_routes import router as insights_router
+app.include_router(insights_router)
 
 # Konfigurasi CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3003,http://10.13.0.4:3003") # Mendukung aplikasi React di localhost dan IP server

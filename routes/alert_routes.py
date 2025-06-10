@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 # Import get_api_key dari api.py daripada mendefinisikan ulang di sini
-from api import get_api_key
+from utils.auth import get_api_key
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 

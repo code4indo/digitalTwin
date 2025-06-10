@@ -732,3 +732,205 @@
     font-size: 14px;
   }
 }
+
+/* Enhanced Recommendations Styling */
+.recommendation-item {
+  border-left: 4px solid #ddd;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #fafafa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.recommendation-item:hover {
+  background: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.recommendation-item.priority-critical {
+  border-left-color: #dc3545;
+  background: #fff5f5;
+}
+
+.recommendation-item.priority-high {
+  border-left-color: #fd7e14;
+  background: #fff8f0;
+}
+
+.recommendation-item.priority-medium {
+  border-left-color: #ffc107;
+  background: #fffbf0;
+}
+
+.recommendation-item.priority-low {
+  border-left-color: #28a745;
+  background: #f8fff8;
+}
+
+.recommendation-item.priority-info {
+  border-left-color: #17a2b8;
+  background: #f0fbff;
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.recommendation-priority {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.priority-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.priority-badge.priority-critical {
+  background: #dc3545;
+  color: white;
+}
+
+.priority-badge.priority-high {
+  background: #fd7e14;
+  color: white;
+}
+
+.priority-badge.priority-medium {
+  background: #ffc107;
+  color: #333;
+}
+
+.priority-badge.priority-low {
+  background: #28a745;
+  color: white;
+}
+
+.priority-badge.priority-info {
+  background: #17a2b8;
+  color: white;
+}
+
+.category-badge {
+  padding: 2px 6px;
+  background: #e9ecef;
+  border-radius: 8px;
+  font-size: 10px;
+  color: #495057;
+}
+
+.recommendation-time {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.recommendation-title {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.recommendation-description {
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.recommendation-room {
+  font-size: 14px;
+  color: #495057;
+  margin-bottom: 5px;
+}
+
+.recommendation-impact {
+  font-size: 14px;
+  color: #28a745;
+  margin-bottom: 5px;
+}
+
+.recommendation-risk {
+  font-size: 14px;
+  color: #dc3545;
+  margin-bottom: 10px;
+}
+
+.recommendation-actions-list {
+  margin-top: 10px;
+}
+
+.recommendation-actions-list strong {
+  color: #495057;
+  font-size: 14px;
+}
+
+.recommendation-actions-list ul {
+  margin: 5px 0 0 0;
+  padding-left: 20px;
+}
+
+.recommendation-actions-list li {
+  margin-bottom: 3px;
+  font-size: 13px;
+  color: #555;
+}
+
+.recommendation-footer {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e9ecef;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn-critical {
+  background: #dc3545;
+  color: white;
+}
+
+.action-btn-critical:hover {
+  background: #c82333;
+}
+
+.action-btn-high {
+  background: #fd7e14;
+  color: white;
+}
+
+.action-btn-high:hover {
+  background: #e96b00;
+}
+
+.action-btn-medium {
+  background: #ffc107;
+  color: #333;
+}
+
+.action-btn-medium:hover {
+  background: #e0a800;
+}
+
+.action-btn-low, .action-btn-info {
+  background: #28a745;
+  color: white;
+}
+
+.action-btn-low:hover, .action-btn-info:hover {
+  background: #218838;
+}

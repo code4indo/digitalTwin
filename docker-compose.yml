@@ -1,5 +1,7 @@
 services:
   web-react:
+    env_file:
+      - .env
     build:
       context: ./web-react
       dockerfile: Dockerfile.react
@@ -14,7 +16,7 @@ services:
     ports:
       - "3003:80"  # Memetakan port 80 container ke port 3003 host
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:80/index.html"]
+      test: ["CMD", "curl", "-f", "http://localhost:80/index.html"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -32,6 +34,8 @@ services:
       - app_network
 
   api:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
@@ -49,6 +53,7 @@ services:
       - INFLUXDB_BUCKET=sensor_data_primary
       - CORS_ORIGINS=http://localhost:3003,http://web-react:80,http://10.13.0.4:3003,*
       - VALID_API_KEYS=${API_KEY:-development_key_for_testing}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     command: python -m uvicorn api:app --host 0.0.0.0 --port 8002 --reload
     networks:
       - app_network

@@ -19,8 +19,8 @@ from services.stats_service import (
     get_temperature_stats_last_hour
 )
 
-# Import get_api_key dari api.py daripada mendefinisikan ulang di sini
-from api import get_api_key
+# Import get_api_key dari utils.auth daripada mendefinisikan ulang di sini
+from utils.auth import get_api_key
 
 router = APIRouter(prefix="/stats", tags=["statistics"])
 

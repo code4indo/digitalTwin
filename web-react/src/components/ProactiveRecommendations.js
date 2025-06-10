@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { fetchRecommendations } from '../utils/api';
+import { fetchProactiveRecommendations } from '../utils/api';
+import './ComponentStyles.css';
 
 const ProactiveRecommendations = () => {
   const [recommendations, setRecommendations] = useState([]);
@@ -10,9 +11,17 @@ const ProactiveRecommendations = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await fetchRecommendations();
-        // Ensure data is always an array
-        if (Array.isArray(data)) {
+        const data = await fetchProactiveRecommendations();
+        
+        // Handle new API response structure
+        if (data && data.priority_recommendations) {
+          // Combine priority and general recommendations
+          const allRecommendations = [
+            ...data.priority_recommendations,
+            ...data.general_recommendations || []
+          ];
+          setRecommendations(allRecommendations);
+        } else if (Array.isArray(data)) {
           setRecommendations(data);
         } else if (data && Array.isArray(data.recommendations)) {
           setRecommendations(data.recommendations);
@@ -83,17 +92,56 @@ const ProactiveRecommendations = () => {
       ) : (
         <div className="recommendations-list">
           {Array.isArray(recommendations) && recommendations.map(recommendation => (
-            <div className="recommendation-item" key={recommendation.id}>
-              <div className="recommendation-time">{recommendation.timeframe}</div>
+            <div className={`recommendation-item priority-${recommendation.priority || 'low'}`} key={recommendation.id}>
+              <div className="recommendation-header">
+                <div className="recommendation-priority">
+                  <span className={`priority-badge priority-${recommendation.priority || 'low'}`}>
+                    {recommendation.priority?.toUpperCase() || 'INFO'}
+                  </span>
+                  {recommendation.category && (
+                    <span className="category-badge">{recommendation.category}</span>
+                  )}
+                </div>
+                {recommendation.created_at && (
+                  <div className="recommendation-time">
+                    {new Date(recommendation.created_at).toLocaleString('id-ID')}
+                  </div>
+                )}
+              </div>
               <div className="recommendation-content">
                 <div className="recommendation-title">{recommendation.title}</div>
                 <div className="recommendation-description">
                   {recommendation.description}
                 </div>
+                {recommendation.room && (
+                  <div className="recommendation-room">
+                    <strong>Ruangan:</strong> {recommendation.room}
+                  </div>
+                )}
+                {recommendation.estimated_impact && (
+                  <div className="recommendation-impact">
+                    <strong>Estimasi Dampak:</strong> {recommendation.estimated_impact}
+                  </div>
+                )}
+                {recommendation.preservation_risk && (
+                  <div className="recommendation-risk">
+                    <strong>Risiko Preservasi:</strong> {recommendation.preservation_risk}
+                  </div>
+                )}
+                {recommendation.specific_actions && Array.isArray(recommendation.specific_actions) && (
+                  <div className="recommendation-actions-list">
+                    <strong>Langkah-langkah:</strong>
+                    <ul>
+                      {recommendation.specific_actions.map((action, index) => (
+                        <li key={index}>{action}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <div className="recommendation-actions">
+              <div className="recommendation-footer">
                 <button 
-                  className="action-btn" 
+                  className={`action-btn action-btn-${recommendation.priority || 'low'}`}
                   onClick={() => handleAction(recommendation.id)}
                 >
                   Tindak Lanjut

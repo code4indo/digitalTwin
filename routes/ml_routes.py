@@ -6,7 +6,7 @@ import os
 import json
 import logging
 
-from api import get_api_key
+from utils.auth import get_api_key
 from services.ml_training_service import create_training_data_collector
 
 router = APIRouter(prefix="/ml", tags=["machine_learning"])

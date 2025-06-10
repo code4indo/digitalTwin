@@ -172,6 +172,8 @@ const RoomDetails = () => {
               </div>
             </div>
             
+            {/* Kontrol Perangkat disembunyikan sesuai permintaan */}
+            {/*
             <div className="devices-control">
               <h4>Kontrol Perangkat</h4>
               <div className="device-list">
@@ -196,6 +198,7 @@ const RoomDetails = () => {
                 ))}
               </div>
             </div>
+            */}
             
             {/* Grafana Dashboard Integration */}
             <div className="room-environmental-trends">

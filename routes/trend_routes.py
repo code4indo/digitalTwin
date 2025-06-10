@@ -15,7 +15,7 @@ from services.trend_service import (
 )
 
 # Import get_api_key dari api.py
-from api import get_api_key
+from utils.auth import get_api_key
 
 router = APIRouter(prefix="/data", tags=["trend_analysis"])
 

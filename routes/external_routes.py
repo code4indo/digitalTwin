@@ -5,7 +5,7 @@ from datetime import datetime
 import requests
 
 # Import get_api_key dari api.py 
-from api import get_api_key
+from utils.auth import get_api_key
 
 router = APIRouter(prefix="/external", tags=["external"])
 

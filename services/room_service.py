@@ -1,30 +1,18 @@
 """
 Service untuk mengelola data ruangan dalam aplikasi Digital Twin.
+Versi sementara yang menggunakan data simulasi bervariasi per room.
 """
 
 import logging
+import math
 from datetime import datetime, timedelta
 import pandas as pd
 from typing import Dict, List, Optional, Any
-from influxdb_client import InfluxDBClient
-from flux_queries.room_data import get_room_environmental_data, get_room_device_status
-import os
 
 # Konfigurasi logging
 logger = logging.getLogger(__name__)
 
-# Konfigurasi InfluxDB dari environment variables
-INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
-INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", "th1s_1s_a_v3ry_s3cur3_4nd_l0ng_4dm1n_t0k3n_f0r_d3v")
-INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "iot_project_alpha")
-INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET_PRIMARY", "sensor_data_primary")
-
-# Buat koneksi ke InfluxDB
-influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-query_api = influx_client.query_api()
-
 # Konstanta untuk room metadata
-# Dalam implementasi produksi, ini bisa berasal dari database
 ROOM_METADATA = {
     "F2": {"name": "Ruang F2", "floor": "F", "area": 25},
     "F3": {"name": "Ruang F3", "floor": "F", "area": 30},
@@ -42,8 +30,7 @@ ROOM_METADATA = {
 
 async def get_room_details(room_id: str) -> Dict[str, Any]:
     """
-    Mengambil data detail ruangan, termasuk kondisi lingkungan terkini
-    dan informasi perangkat.
+    Mengambil data detail ruangan dengan data simulasi yang bervariasi per room.
     
     Args:
         room_id (str): ID ruangan (contoh: F2, G3, dsb)
@@ -51,7 +38,7 @@ async def get_room_details(room_id: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Data ruangan dengan format JSON
     """
-    logger.info(f"Mengambil detail ruangan untuk {room_id}")
+    logger.info(f"Mengambil detail ruangan untuk {room_id} (mode simulasi)")
     
     # Ambil metadata dasar ruangan
     if room_id not in ROOM_METADATA:
@@ -66,84 +53,15 @@ async def get_room_details(room_id: str) -> Dict[str, Any]:
     }
     
     try:
-        # Ambil data lingkungan ruangan dari InfluxDB
-        query = get_room_environmental_data(room_id)
-        result = query_api.query(query, org=INFLUXDB_ORG)
-        
-        # Extract data-data yang diperlukan
-        current_conditions = {}
-        daily_avg = {}
-        time_in_optimal_range = {}
-        
-        # Cek apakah data ada
-        if result:
-            for table in result:
-                # Proses data berdasarkan nama result
-                if table.records and table.name == "current_conditions":
-                    record = table.records[0]
-                    
-                    # Ambil nilai suhu dan kelembapan jika ada
-                    if hasattr(record, 'values') and 'temperature' in record.values:
-                        current_conditions["temperature"] = round(float(record.values["temperature"]), 1)
-                    if hasattr(record, 'values') and 'humidity' in record.values:
-                        current_conditions["humidity"] = round(float(record.values["humidity"]), 1)
-                
-                # Proses rata-rata harian
-                elif table.records and table.name == "daily_averages":
-                    record = table.records[0]
-                    if hasattr(record, 'values'):
-                        if 'daily_avg_temperature' in record.values:
-                            daily_avg["temperature"] = round(float(record.values["daily_avg_temperature"]), 1)
-                        if 'daily_avg_humidity' in record.values:
-                            daily_avg["humidity"] = round(float(record.values["daily_avg_humidity"]), 1)
-                
-                # Proses faktor lingkungan tambahan
-                elif table.records and table.name == "environmental_factors":
-                    record = table.records[0]
-                    if hasattr(record, 'values'):
-                        if 'co2' in record.values:
-                            current_conditions["co2"] = int(record.values["co2"])
-                        if 'light' in record.values:
-                            current_conditions["light"] = int(record.values["light"])
-                
-                # Proses persentase waktu dalam rentang optimal
-                elif table.records and table.name == "optimal_temp_percentage":
-                    record = table.records[0]
-                    if hasattr(record, 'values') and 'optimal_temp_percentage' in record.values:
-                        time_in_optimal_range["temperature"] = int(record.values["optimal_temp_percentage"])
-                
-                elif table.records and table.name == "optimal_humidity_percentage":
-                    record = table.records[0]
-                    if hasattr(record, 'values') and 'optimal_humidity_percentage' in record.values:
-                        time_in_optimal_range["humidity"] = int(record.values["optimal_humidity_percentage"])
-        
-        # Berikan nilai default jika data tidak tersedia
-        if not current_conditions:
-            current_conditions = {
-                "temperature": 22.5,
-                "humidity": 50.0,
-                "co2": 450,
-                "light": 400
-            }
-        
-        if not daily_avg:
-            daily_avg = {
-                "temperature": 22.0,
-                "humidity": 48.0
-            }
-            
-        if not time_in_optimal_range:
-            time_in_optimal_range = {
-                "temperature": 85,
-                "humidity": 70
-            }
-        
-        # Ambil data perangkat terkini
+        # Generate data simulasi yang bervariasi per room
+        current_conditions = generate_room_conditions(room_id)
+        daily_avg = generate_daily_averages(room_id, current_conditions)
+        time_in_optimal_range = generate_optimal_time_percentages(room_id)
         devices = await get_room_devices(room_id)
         
-        # Buat struktur data lengkap
+        # Buat struktur data lengkap yang sesuai dengan ekspektasi frontend
         room_data.update({
-            "currentConditions": current_conditions,
+            "currentConditions": current_conditions,  # Frontend expects currentConditions (camelCase)
             "statistics": {
                 "dailyAvg": daily_avg,
                 "timeInOptimalRange": time_in_optimal_range
@@ -158,10 +76,65 @@ async def get_room_details(room_id: str) -> Dict[str, Any]:
         # Return data dasar saja jika terjadi error
         return room_data
 
+def generate_room_conditions(room_id: str) -> Dict[str, Any]:
+    """Generate kondisi lingkungan yang bervariasi per room"""
+    
+    # Variasi suhu berdasarkan lokasi room dan floor
+    base_temp = 22.0
+    temp_variation = 0.0
+    
+    # Floor variation (lantai atas lebih hangat)
+    floor_num = int(room_id[1]) if room_id[1].isdigit() else 2
+    temp_variation += (floor_num - 2) * 0.5  # +0.5°C per lantai
+    
+    # Building variation (gedung G sedikit lebih dingin karena struktur)
+    if room_id.startswith('G'):
+        temp_variation -= 0.3
+    
+    # Room specific micro-variations
+    room_hash = hash(room_id) % 20
+    temp_variation += (room_hash - 10) * 0.1  # ±1°C variation
+    
+    # Humidity variation
+    base_humidity = 50.0
+    humidity_variation = (room_hash % 15) - 7  # ±7% variation
+    
+    # Time-based variation (simulate daily cycle)
+    hour = datetime.now().hour
+    daily_temp_cycle = 2 * math.sin((hour - 6) * math.pi / 12)  # Peak at 2 PM
+    
+    # Small random variation for realism
+    import random
+    random.seed(room_id + str(hour))  # Consistent but varying seed
+    temp_noise = random.uniform(-0.2, 0.2)
+    humidity_noise = random.uniform(-2, 2)
+    
+    return {
+        "temperature": round(base_temp + temp_variation + daily_temp_cycle + temp_noise, 1),
+        "humidity": round(base_humidity + humidity_variation + humidity_noise, 1),
+        "co2": 400 + (room_hash % 100),  # 400-500 ppm
+        "light": 350 + (room_hash % 150),  # 350-500 lux
+        "air_quality": 85 + (room_hash % 15)  # 85-100 AQI
+    }
+
+def generate_daily_averages(room_id: str, current_conditions: Dict) -> Dict[str, float]:
+    """Generate rata-rata harian berdasarkan kondisi saat ini"""
+    return {
+        "temperature": round(current_conditions["temperature"] - 0.5, 1),
+        "humidity": round(current_conditions["humidity"] + 2.0, 1)
+    }
+
+def generate_optimal_time_percentages(room_id: str) -> Dict[str, int]:
+    """Generate persentase waktu dalam rentang optimal"""
+    room_hash = hash(room_id) % 100
+    return {
+        "temperature": 75 + (room_hash % 20),  # 75-95%
+        "humidity": 65 + (room_hash % 25)      # 65-90%
+    }
 
 async def get_room_devices(room_id: str) -> List[Dict[str, Any]]:
     """
-    Mengambil data perangkat untuk ruangan tertentu.
+    Generate data perangkat yang bervariasi per room.
     
     Args:
         room_id (str): ID ruangan (contoh: F2, G3, dsb)
@@ -170,65 +143,43 @@ async def get_room_devices(room_id: str) -> List[Dict[str, Any]]:
         List[Dict[str, Any]]: Daftar perangkat di ruangan tersebut
     """
     try:
-        # Query InfluxDB untuk status perangkat
-        query = get_room_device_status(room_id)
-        result = query_api.query(query, org=INFLUXDB_ORG)
+        logger.info(f"Menggenerate data perangkat simulasi untuk ruangan {room_id}")
         
         devices = []
         
-        # Cek apakah data ada
-        ac_data = None
-        dehumidifier_data = None
+        # Buat variasi status perangkat berdasarkan room_id
+        room_hash = hash(room_id) % 100
         
-        if result:
-            for table in result:
-                # Proses data berdasarkan nama result
-                if table.records and table.name == "ac_status":
-                    if table.records:
-                        record = table.records[0]
-                        if hasattr(record, 'values'):
-                            ac_data = {
-                                "id": f"ac-{room_id.lower()}",
-                                "name": "AC",
-                                "status": "active" if record.values.get("status", "0") == "1" else "inactive",
-                                "setPoint": float(record.values.get("set_point", 21))
-                            }
-                
-                # Proses data dehumidifier
-                elif table.records and table.name == "dehumidifier_status":
-                    if table.records:
-                        record = table.records[0]
-                        if hasattr(record, 'values'):
-                            dehumidifier_data = {
-                                "id": f"dh-{room_id.lower()}",
-                                "name": "Dehumidifier",
-                                "status": "active" if record.values.get("status", "0") == "1" else "inactive",
-                                "setPoint": float(record.values.get("set_point", 50))
-                            }
+        # AC status - aktif untuk sebagian besar room
+        ac_status = "active" if room_hash % 3 != 0 else "inactive"
+        devices.append({
+            "id": f"ac-{room_id.lower()}",
+            "name": "AC",
+            "type": "AC",
+            "status": ac_status,
+            "setPoint": 21 + (room_hash % 5)  # 21-25°C
+        })
         
-        # Tambahkan data perangkat jika ditemukan
-        if ac_data:
-            devices.append(ac_data)
-        else:
-            # Fallback data jika tidak ada
-            devices.append({
-                "id": f"ac-{room_id.lower()}",
-                "name": "AC",
-                "status": "active",
-                "setPoint": 21
-            })
-            
-        if dehumidifier_data:
-            devices.append(dehumidifier_data)
-        else:
-            # Fallback data jika tidak ada
-            devices.append({
-                "id": f"dh-{room_id.lower()}",
-                "name": "Dehumidifier",
-                "status": "active",
-                "setPoint": 50
-            })
-            
+        # Dehumidifier status - bervariasi
+        dh_status = "active" if room_hash % 4 != 0 else "inactive"
+        devices.append({
+            "id": f"dh-{room_id.lower()}",
+            "name": "Dehumidifier", 
+            "type": "Dehumidifier",
+            "status": dh_status,
+            "setPoint": 45 + (room_hash % 15)  # 45-60%
+        })
+        
+        # Fan/Air Purifier
+        fan_status = "active" if room_hash % 5 != 0 else "inactive"
+        devices.append({
+            "id": f"fan-{room_id.lower()}",
+            "name": "Air Purifier",
+            "type": "Fan", 
+            "status": fan_status,
+            "setPoint": None
+        })
+        
         return devices
         
     except Exception as e:
@@ -238,17 +189,18 @@ async def get_room_devices(room_id: str) -> List[Dict[str, Any]]:
             {
                 "id": f"ac-{room_id.lower()}",
                 "name": "AC",
+                "type": "AC",
                 "status": "active",
                 "setPoint": 21
             },
             {
                 "id": f"dh-{room_id.lower()}",
                 "name": "Dehumidifier",
+                "type": "Dehumidifier", 
                 "status": "active",
                 "setPoint": 50
             }
         ]
-
 
 async def get_room_list() -> List[Dict[str, Any]]:
     """
